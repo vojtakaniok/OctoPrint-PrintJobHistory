@@ -1,3 +1,5 @@
+*If you would like to help test new changes or just see what's coming before everyone else, head to your Software Update panel and set the Release Channel to Release & Development.*
+
 ## [BugFix]
 - #xxx
 
