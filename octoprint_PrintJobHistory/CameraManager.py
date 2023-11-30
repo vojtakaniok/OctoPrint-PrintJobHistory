@@ -75,6 +75,17 @@ class CameraManager(object):
 
         if os.path.isfile(imageLocation):
             return imageLocation
+        else:
+            # try jpg for old files
+            imageLocation = imageLocation.replace('.png','')
+
+            if not str(imageLocation).endswith(".jpg"):
+                imageLocation = imageLocation + ".jpg"
+
+            if os.path.isfile(imageLocation):
+                return imageLocation
+
+
 
         if returnDefaultImage:
             # defaultImageSnapshotName = self._pluginBaseFolder + "/static/images/no-photo-icon.jpg"
@@ -192,7 +203,7 @@ class CameraManager(object):
                         # image = image.transpose(Image.ROTATE_270)
                         image = image.transpose(Image.ROTATE_90)
                     # output = StringIO.StringIO()
-                    image.save(snapshotFilename, format="JPEG")
+                    image.save(snapshotFilename, format="PNG")
                     self._logger.info("Image stored to '" + snapshotFilename + "'")
                     # data = output.getvalue()
                     # output.close()
