@@ -27,17 +27,17 @@ jobs:
           ls ${{ github.workspace }}
 
       - name: version
-        run: echo "::set-output name=version::$(cat setup.py | grep 'plugin_version = "*"' | cut -d '"' -f2)"
+        run: echo "version=$(cat setup.py | grep 'plugin_version = "*"' | cut -d '"' -f2)" >> $GITHUB_OUTPUT
         id: version
 
       - name: Repository and Branch name
         id: branch
         run: |
                export branch_name=${GITHUB_REF##*/}
-               echo "::set-output name=branch_name::$branch_name"
+               echo "branch_name=$branch_name" >> $GITHUB_OUTPUT
                echo running on branch $branch_name
                export repo_name=${GITHUB_REPOSITORY#*/}
-               echo "::set-output name=repo_name::$repo_name"
+               echo "repo_name=$repo_name" >> $GITHUB_OUTPUT
 
 
       - name: release
