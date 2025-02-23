@@ -4,15 +4,15 @@ layout: plugin
 id: PrintJobHistory
 title: PrintJobHistory
 description: TODO
-author: dojohnso
+author: vojtakaniok
 license: AGPLv3
 
 # TODO
 date: today's date in format YYYY-MM-DD, e.g. 2015-04-21
 
-homepage: https://github.com/dojohnso/OctoPrint-PrintJobHistory
-source: https://github.com/dojohnso/OctoPrint-PrintJobHistory
-archive: https://github.com/dojohnso/OctoPrint-PrintJobHistory/archive/main.zip
+homepage: https://github.com/vojtakaniok/OctoPrint-PrintJobHistory
+source: https://github.com/vojtakaniok/OctoPrint-PrintJobHistory
+archive: https://github.com/vojtakaniok/OctoPrint-PrintJobHistory/archive/main.zip
 
 # TODO
 # Set this to true if your plugin uses the dependency_links setup parameter to include

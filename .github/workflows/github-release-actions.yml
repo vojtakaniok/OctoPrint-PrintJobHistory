@@ -59,13 +59,15 @@ jobs:
             - #xxx
 
             ## Counter
-            ![downloaded](https://img.shields.io/github/downloads/dojohnso/${{ steps.branch.outputs.repo_name }}/${{ steps.version.outputs.version }}/total)
+            ![downloaded](https://img.shields.io/github/downloads/vojtakaniok/${{ steps.branch.outputs.repo_name }}/${{ steps.version.outputs.version }}/total)
 
             ## *NOTE: this plugin has been abandoned by the original creator and adopted here by a new maintainer*
 
-            **This plugin is under new management** and will focus on critical bug fixes to start. Please bear with me as I get acclimated to this new plugin. If you would like to support these new efforts, please consider buying me a coffee or two. Thank you!
+            **This plugin is under new management** and will focus on critical bug fixes to start. Please bear with me as I get acclimated to this new plugin.
 
-            <a href="https://www.buymeacoffee.com/djohnson.tech" target="_blank"><img src="https://djohnson.tech/images/white-button.png" width=300 /></a>
+            If you would like to support these new efforts, please consider buying me a coffee or two. Thank you!
+
+            [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/D1D21B0LA9)
 #          body_path: RELEASE_TEMPLATE.md
 
       - name: upload main.zip to release
@@ -79,6 +81,6 @@ jobs:
           asset_content_type: application/gzip
 
       - name: download main.zip
-        run: curl -O -J -L -v https://github.com/dojohnso/${{ steps.branch.outputs.repo_name }}/releases/download/${{ steps.version.outputs.version }}/main.zip
+        run: curl -O -J -L -v https://github.com/vojtakaniok/${{ steps.branch.outputs.repo_name }}/releases/download/${{ steps.version.outputs.version }}/main.zip
 
       - run: echo "🍏 This job's status is ${{ job.status }}."

@@ -491,7 +491,7 @@ class DatabaseManager(object):
 
 
 	def _createDatabase(self, forceCreateTables):
-		self._database = SqliteDatabase(self._databaseFileLocation)
+		self._database = SqliteDatabase(self._databaseFileLocation, check_same_thread=False)
 		DatabaseManager.db = self._database
 		self._database.bind(MODELS)
 
