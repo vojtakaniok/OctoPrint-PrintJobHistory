@@ -1,7 +1,7 @@
 /*
  * View model for PrintJobHistory
  *
- * Author: dojohnso
+ * Author: vojtakaniok
  * License: AGPLv3
  */
 $(function() {

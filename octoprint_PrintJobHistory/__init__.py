@@ -1465,7 +1465,7 @@ class PrintJobHistoryPlugin(
 				# version check: github repository
 				type="github_release",
 
-				user="dojohnso",
+				user="vojtakaniok",
 				repo="OctoPrint-PrintJobHistory",
 				current=self._plugin_version,
 
@@ -1488,7 +1488,7 @@ class PrintJobHistoryPlugin(
 				],
 
 				# update method: pip
-				pip="https://github.com/dojohnso/OctoPrint-PrintJobHistory/releases/download/{target_version}/main.zip"
+				pip="https://github.com/vojtakaniok/OctoPrint-PrintJobHistory/releases/download/{target_version}/main.zip"
 			)
 		)
 
