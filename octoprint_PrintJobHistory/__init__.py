@@ -1418,12 +1418,6 @@ class PrintJobHistoryPlugin(
 		]
 
 
-	def get_template_vars(self):
-		return dict(
-			apikey=self._settings.global_get(["api", "key"])
-		)
-
-
 	##~~ AssetPlugin mixin
 	def get_assets(self):
 		# Define your plugin's asset files to automatically include in the
