@@ -53,6 +53,8 @@ class PrintJobHistoryPlugin(
 		self._displayLayerProgressPluginImplementationState = None
 		self._spoolManagerPluginImplementation = None
 		self._spoolManagerPluginImplementationState = None
+		self._spoolmanPluginImplementation = None
+		self._spoolmanPluginImplementationState = None
 		self._ultimakerFormatPluginImplementation = None
 		self._ultimakerFormatPluginImplementationState = None
 		self._prusaSlicerThumbnailsPluginImplementation = None
@@ -163,6 +165,12 @@ class PrintJobHistoryPlugin(
 		spoolManagerCurrentVersion = pluginInfo[2]
 		spoolManagerRequiredVersion = pluginInfo[3]
 
+		pluginInfo = self._getPluginInformation(SettingsKeys.PLUGIN_SPOOLMAN)
+		self._spoolmanPluginImplementationState = pluginInfo[0]
+		self._spoolmanPluginImplementation = pluginInfo[1]
+		spoolmanCurrentVersion = pluginInfo[2]
+		spoolmanRequiredVersion = pluginInfo[3]
+
 		pluginInfo = self._getPluginInformation(SettingsKeys.PLUGIN_ULTIMAKER_FORMAT_PACKAGE)
 		self._ultimakerFormatPluginImplementationState = pluginInfo[0]
 		self._ultimakerFormatPluginImplementation = pluginInfo[1]
@@ -194,6 +202,7 @@ class PrintJobHistoryPlugin(
 						  "| filamentmanager=" + self._filamentManagerPluginImplementationState + " (" + str(filamentManagerCurrentVersion) + ")\n"
 						  "| DisplayLayerProgress=" + self._displayLayerProgressPluginImplementationState + " (" + str(displayLayerCurrentVersion) + ")\n"
 						  "| SpoolManager=" + self._spoolManagerPluginImplementationState + " (" + str(spoolManagerCurrentVersion) + ")\n"
+                          "| Spoolman=" + self._spoolmanPluginImplementationState + " (" + str(spoolmanCurrentVersion) + ")\n"
 						  "| UltimakerFormat=" + self._ultimakerFormatPluginImplementationState + " (" + str(ultimakerCurrentVersion) + ")\n"
 						  "| PrusaSlicerThumbnail=" + self._prusaSlicerThumbnailsPluginImplementationState + " (" + str(pruseSlicerCurrentVersion) + ")\n"
 						  "| costestimation=" + self._costEstimationPluginImplementationState + " (" + str(costPluginCurrentVersion) + ")\n"
@@ -219,8 +228,9 @@ class PrintJobHistoryPlugin(
 					missingMessage = missingMessage + "<li><a target='_newTab' href='https://plugins.octoprint.org/plugins/preheat/'>PreHeat Button (" + str(preHeatRequiredVersion) + "+)</a> (<b>" + self._preHeatPluginImplementationState + "</b>)</li>"
 
 				# if at least one filemant tracker is installed, then don't inform the user about the missing other plugin
-				if (self._spoolManagerPluginImplementation == None and self._filamentManagerPluginImplementation == None):
+				if (self._spoolManagerPluginImplementation == None and self._filamentManagerPluginImplementation == None and self._spoolmanPluginImplementation == None):
 					missingMessage = missingMessage + "<li><a target='_newTab' href='https://plugins.octoprint.org/plugins/SpoolManager/'>SpoolManager (" + str(spoolManagerRequiredVersion) + "+)</a> (<b>" + self._spoolManagerPluginImplementationState + "</b>)<br/><b>or</b></li>"
+					missingMessage = missingMessage + "<li><a target='_newTab' href='https://plugins.octoprint.org/plugins/Spoolman/'>Spoolman (" + str(spoolmanRequiredVersion) + "+)</a> (<b>" + self._spoolmanPluginImplementationState + "</b>)<br/><b>or</b></li>"
 					missingMessage = missingMessage + "<li><a target='_newTab' href='https://plugins.octoprint.org/plugins/filamentmanager/'>FilamentManager (" + str(filamentManagerRequiredVersion) + "+)</a> (<b>" + self._filamentManagerPluginImplementationState + "</b>)</li>"
 
 				if self._displayLayerProgressPluginImplementation == None:
@@ -247,6 +257,7 @@ class PrintJobHistoryPlugin(
 		# check if the current tracking plugin is known
 		if (currentFilamentTrackingPlugin != SettingsKeys.KEY_SELECTED_NONE_PLUGIN and
 			currentFilamentTrackingPlugin != SettingsKeys.KEY_SELECTED_SPOOLMANAGER_PLUGIN and
+			currentFilamentTrackingPlugin != SettingsKeys.KEY_SELECTED_SPOOLMAN_PLUGIN and
 			currentFilamentTrackingPlugin != SettingsKeys.KEY_SELECTED_FILAMENTMANAGER_PLUGIN):
 			# unknown -> set to none
 			self._settings.set([SettingsKeys.SETTINGS_KEY_SELECTED_FILAMENTTRACKER_PLUGIN],
@@ -259,13 +270,19 @@ class PrintJobHistoryPlugin(
 							   SettingsKeys.KEY_SELECTED_NONE_PLUGIN)
 			self._settings.save()
 
+		if ( (currentFilamentTrackingPlugin == SettingsKeys.KEY_SELECTED_SPOOLMAN_PLUGIN) and
+			(self._isSpoolmanInstalledAndEnabled() == False) ):
+			self._settings.set([SettingsKeys.SETTINGS_KEY_SELECTED_FILAMENTTRACKER_PLUGIN],
+							   SettingsKeys.KEY_SELECTED_NONE_PLUGIN)
+			self._settings.save()
+
 		if ( (currentFilamentTrackingPlugin == SettingsKeys.KEY_SELECTED_FILAMENTMANAGER_PLUGIN) and
 			 (self._isFilamentManagerInstalledAndEnabled() == False) ):
 			self._settings.set([SettingsKeys.SETTINGS_KEY_SELECTED_FILAMENTTRACKER_PLUGIN], SettingsKeys.KEY_SELECTED_NONE_PLUGIN)
 			self._settings.save()
 
 		notifyUser = self._settings.get_boolean([SettingsKeys.SETTINGS_KEY_NO_NOTIFICATION_FILAMENTTRACKERING_PLUGIN_SELECTION]) == False
-		if ( (self._isSpoolManagerInstalledAndEnabled() == True or self._isFilamentManagerInstalledAndEnabled() == True) and
+		if ( (self._isSpoolManagerInstalledAndEnabled() == True or self._isSpoolmanInstalledAndEnabled() == True or self._isFilamentManagerInstalledAndEnabled() == True) and
 			 (self._settings.get([SettingsKeys.SETTINGS_KEY_SELECTED_FILAMENTTRACKER_PLUGIN]) == SettingsKeys.KEY_SELECTED_NONE_PLUGIN) ):
 				# Plugins installed, but currently 'none' is selected
 				self._logger.warning("Filamentracking is disabled, but some plugins are installed!");
@@ -279,6 +296,9 @@ class PrintJobHistoryPlugin(
 
 	def _isSpoolManagerInstalledAndEnabled(self):
 		return True if self._spoolManagerPluginImplementation != None and self._spoolManagerPluginImplementationState == "enabled" else False
+
+	def _isSpoolmanInstalledAndEnabled(self):
+		return True if self._spoolmanPluginImplementation != None and self._spoolmanPluginImplementationState == "enabled" else False
 
 	def _isFilamentManagerInstalledAndEnabled(self):
 		return True if self._filamentManagerPluginImplementation != None and self._filamentManagerPluginImplementationState == "enabled" else False
@@ -486,6 +506,17 @@ class PrintJobHistoryPlugin(
 				# try the old way
 				result = self._spoolManagerPluginImplementation.myFilamentOdometer.getExtrusionAmount()
 			pass
+		elif (SettingsKeys.KEY_SELECTED_SPOOLMAN_PLUGIN == filamentTrackerPlugin):
+			# get data from SPOOLMAN
+
+			# TODO: should be replaced with a proper exposed function call
+			# Currently, we rely on the fact, that the PRINT_DONE event of this plugin is executed before Spoolman.
+			# Spoolman clears the extrusionAmount after handling the PRINT_DONE event.
+			peek_stats_helpers = self._spoolmanPluginImplementation.lastPrintOdometerLoad.send(False)
+			current_extrusion_stats = peek_stats_helpers['get_current_extrusion_stats']()
+			result = current_extrusion_stats['extrusionAmount'][:]
+
+			pass
 		elif (SettingsKeys.KEY_SELECTED_FILAMENTMANAGER_PLUGIN == filamentTrackerPlugin):
 			# myFilamentOdometer, since FilamentManager V1.7.2
 			result = self._filamentManagerPluginImplementation.myFilamentOdometer.getExtrusionAmount()
@@ -548,6 +579,50 @@ class PrintJobHistoryPlugin(
 						}
 						self._logger.info(
 							" reading for '" + toolId + "',  Spool: '" + spoolName + "', Material: '" + material + "', Vendor: '" + vendor + "'")
+			pass
+		elif (SettingsKeys.KEY_SELECTED_SPOOLMAN_PLUGIN == filamentTrackerPlugin):
+			self._logger.info("Try reading filament from Spoolman...")
+			# get data from SPOOLMAN
+
+			# TODO: should be replaced with a proper exposed function call
+			# Especially getting the selected spools via a protected _settings variable is BAD
+			spools_available = self._spoolmanPluginImplementation.getSpoolmanConnector().handleGetSpoolsAvailable()
+			selected_spool_ids = self._spoolmanPluginImplementation._settings.get(['selectedSpoolIds'])
+
+			spool_by_id = {str(spool['id']): spool for spool in spools_available['data']['spools']}
+
+			spools = {}
+			for tool_id, spool_id in selected_spool_ids.items():
+				spool = spool_by_id.get(spool_id['spoolId'])
+				if spool:
+					spools[tool_id] = spool
+				else:
+					spools[tool_id] = None
+
+			result = {}
+			for toolId, spoolData in spools.items():
+				if (spoolData != None):
+					toolId = "tool" + toolId
+					spoolName = spoolData["filament"]["name"]
+					weight = spoolData["filament"]["weight"]
+					spoolCost = spoolData["price"]
+
+					material = spoolData["filament"]["material"]
+					vendor = spoolData["filament"]["vendor"]["name"]
+					density = spoolData["filament"]["density"]
+					diameter = spoolData["filament"]["diameter"]
+
+					result[toolId] = {
+						"spoolName": spoolName,
+						"material": material,
+						"vendor":  vendor,
+						"density": density,
+						"diameter":  diameter,
+						"spoolCost": spoolCost,
+						"weight": weight
+					}
+					self._logger.info(
+						" reading for '" + toolId + "',  Spool: '" + spoolName + "', Material: '" + material + "', Vendor: '" + vendor + "'")
 			pass
 		elif (SettingsKeys.KEY_SELECTED_FILAMENTMANAGER_PLUGIN == filamentTrackerPlugin):
 			self._logger.info("Try reading filament from FilamentManager...")
@@ -1255,6 +1330,7 @@ class PrintJobHistoryPlugin(
 											snapshotFileLocation=snapshotFileLocation,
 											isPrintHistoryPluginAvailable=self._printHistoryPluginImplementation != None,
 											isSpoolManagerInstalled = self._isSpoolManagerInstalledAndEnabled(),
+											isSpoolmanInstalled = self._isSpoolmanInstalledAndEnabled(),
 											isFilamentManagerInstalled = self._isFilamentManagerInstalledAndEnabled(),
 											isCostEstimationPluginAvailable = self._isCostEstimationInstalledAndEnabled(),
 											isPreHeatPluginAvailable = self._isPreHeatInstalledAndEnabled(),

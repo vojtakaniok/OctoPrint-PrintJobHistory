@@ -8,6 +8,7 @@ class SettingsKeys():
 	PLUGIN_FILAMENT_MANAGER = { "key": "filamentmanager", "minVersion": "1.7.2"}
 	PLUGIN_DISPLAY_LAYER_PROGRESS = { "key": "DisplayLayerProgress", "minVersion": "1.26.0"}
 	PLUGIN_SPOOL_MANAGER = { "key": "SpoolManager", "minVersion": "1.4.2"}
+	PLUGIN_SPOOLMAN = { "key": "Spoolman", "minVersion": "1.3.0"}
 	PLUGIN_ULTIMAKER_FORMAT_PACKAGE = { "key": "UltimakerFormatPackage", "minVersion": "1.0.0"}
 	PLUGIN_PRUSA_SLICER_THUMNAIL = { "key": "prusaslicerthumbnails", "minVersion": "1.0.0"}
 	PLUGIN_COST_ESTIMATION = { "key": "costestimation", "minVersion": "3.4.0"}
@@ -30,6 +31,7 @@ class SettingsKeys():
 
 	SETTINGS_KEY_SELECTED_FILAMENTTRACKER_PLUGIN = "selectedFilamentTrackerPlugin"
 	KEY_SELECTED_SPOOLMANAGER_PLUGIN = "SpoolManager Plugin"	# visible inn plugin-settings
+	KEY_SELECTED_SPOOLMAN_PLUGIN = "Spoolman Plugin"	# visible inn plugin-settings
 	KEY_SELECTED_FILAMENTMANAGER_PLUGIN = "FilamentManager Plugin"	# visible inn plugin-settings
 	KEY_SELECTED_NONE_PLUGIN = "none"
 	SETTINGS_KEY_NO_NOTIFICATION_FILAMENTTRACKERING_PLUGIN_SELECTION = "noNotificationTrackingPluginSelection"

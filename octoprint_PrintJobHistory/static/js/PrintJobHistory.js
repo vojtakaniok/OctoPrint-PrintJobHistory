@@ -392,6 +392,7 @@ $(function() {
 
         self.isPrintHistoryPluginAvailable = ko.observable(false);
         self.isSpoolManagerInstalled = ko.observable(false);
+        self.isSpoolmanInstalled = ko.observable(false);
         self.isFilamentManagerInstalled = ko.observable(false);
 
         self.isPreHeatPluginAvailableText = ko.observable("unknown");
@@ -752,6 +753,7 @@ $(function() {
                 self.snapshotFileLocation(data.snapshotFileLocation);
                 self.isPrintHistoryPluginAvailable(data.isPrintHistoryPluginAvailable);
                 self.isSpoolManagerInstalled(data.isSpoolManagerInstalled);
+                self.isSpoolmanInstalled(data.isSpoolmanInstalled);
                 self.isFilamentManagerInstalled(data.isFilamentManagerInstalled);
 
                 if (data.isCostEstimationPluginAvailable == true){
