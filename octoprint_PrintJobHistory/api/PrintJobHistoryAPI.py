@@ -47,6 +47,7 @@ class PrintJobHistoryAPI(octoprint.plugin.BlueprintPlugin):
     def _updatePrintJobFromJson(self, printJobModel,  jsonData):
         # transfer header values
         printJobModel.userName = self._getValueFromJSONOrNone("userName", jsonData)
+        printJobModel.customerName = self._getValueFromJSONOrNone("customerName", jsonData)
         printJobModel.fileName = self._getValueFromJSONOrNone("fileName", jsonData)
         # printJobModel.filePathName = self._getValueFromJSONOrNone("fileName", jsonData) # pech
         printJobModel.printStartDateTime = StringUtils.transformToDateTimeOrNone(self._getValueFromJSONOrNone("printStartDateTimeFormatted", jsonData))
@@ -181,6 +182,7 @@ class PrintJobHistoryAPI(octoprint.plugin.BlueprintPlugin):
     def _createSamplePrintModel(self, fileName="OllisBenchy.gcode"):
         p1 = PrintJobModel()
         p1.userName = "Olli"
+        p1.customerName = "Sample Customer"
         p1.printStatusResult = "success"
         p1.printStartDateTime = datetime.now()
         p1.printEndDateTime = datetime.now() + timedelta(minutes=123)
@@ -946,3 +948,8 @@ class PrintJobHistoryAPI(octoprint.plugin.BlueprintPlugin):
             printJobTemplateName=defaultReportTemplateName
         )
 
+    #######################################################################################   GET UNIQUE CUSTOMER NAMES
+    @octoprint.plugin.BlueprintPlugin.route("/getUniqueCustomerNames", methods=["GET"])
+    def get_unique_customer_names(self):
+        uniqueNames = self._databaseManager.getUniqueCustomerNames()
+        return flask.jsonify(uniqueNames)

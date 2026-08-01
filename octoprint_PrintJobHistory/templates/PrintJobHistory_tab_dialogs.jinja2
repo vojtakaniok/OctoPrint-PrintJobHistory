@@ -261,6 +261,17 @@
                                                 <input type="text" class="input-large" data-bind="value: printJobForEditing().material" />
                                             </div>
                                         </div>
+                                        <div class="control-group">
+                                            <label class="control-label">Customer Name</label>
+                                            <div class="controls">
+                                                <input type="text" class="input-large" list="customerNames" data-bind="value: printJobForEditing().customerName" />
+                                                <datalist id="customerNames">
+                                                    <!-- ko foreach: printJobEditDialog.customerNames -->
+                                                    <option data-bind="value: $data"></option>
+                                                    <!-- /ko -->
+                                                </datalist>
+                                            </div>
+                                        </div>
                                         <div class="" style="margin-left:80px">
                                             <small><font color="Gray"> * spool values will not be reflected to Spool- or Filament- ManagerPlugin</font></small>
                                         </div>

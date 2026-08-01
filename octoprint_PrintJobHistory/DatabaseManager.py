@@ -22,7 +22,7 @@ from peewee import *
 FORCE_CREATE_TABLES = False
 SQL_LOGGING = False
 
-CURRENT_DATABASE_SCHEME_VERSION = 8
+CURRENT_DATABASE_SCHEME_VERSION = 9
 
 # List all Models
 MODELS = [PluginMetaDataModel, PrintJobModel, FilamentModel, TemperatureModel, CostModel]
@@ -98,6 +98,27 @@ class DatabaseManager(object):
 
 	def _upgradeFrom8To9(self):
 		self._logger.info(" Starting 8 -> 9")
+		# What is changed:
+		# - PrintJobModel:
+		# 	- Add Column: customerName
+
+		connection = sqlite3.connect(self._databaseFileLocation)
+		cursor = connection.cursor()
+
+		sql = """
+		PRAGMA foreign_keys=off;
+		BEGIN TRANSACTION;
+
+			ALTER TABLE 'pjh_printjobmodel' ADD 'customerName' VARCHAR(255);
+
+				UPDATE 'pjh_pluginmetadatamodel' SET value=9 WHERE key='databaseSchemeVersion';
+		COMMIT;
+		PRAGMA foreign_keys=on;
+		"""
+		cursor.executescript(sql)
+
+		connection.close()
+
 		self._logger.info(" Successfully 8 -> 9")
 		pass
 
@@ -756,7 +777,7 @@ class DatabaseManager(object):
 		# sortOrder = tableQuery["sortOrder"]
 		# filterName = tableQuery["filterName"]
 
-		# dont use join "Kartesischs-Produkt" myQuery = PrintJobModel.select().join(FilamentModel).offset(offset).limit(limit)
+		# dont use join "Kartesischs-Produkt" myQuery = PrintJobModel.select().join(FilamentModel).switch(PrintJobModel).join(TemperatureModel).order_by(PrintJobModel.printStartDateTime.desc())
 		myQuery = PrintJobModel.select().offset(offset).limit(limit)
 		myQuery = self._addTableQueryToSelect(myQuery, tableQuery)
 		# if (filterName == "onlySuccess"):
@@ -887,3 +908,8 @@ class DatabaseManager(object):
 
 				self.sendErrorMessageToClient("PJH-DatabaseManager", "Could not delete the printjob ('"+ str(databaseId) +"') from the database. See OctoPrint.log for details!")
 			pass
+
+	def getUniqueCustomerNames(self):
+		query = PrintJobModel.select(PrintJobModel.customerName).where(PrintJobModel.customerName.is_null(False) & (PrintJobModel.customerName != "")).distinct()
+		names = [job.customerName for job in query]
+		return names

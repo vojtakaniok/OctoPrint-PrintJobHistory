@@ -240,5 +240,13 @@ function PrintJobHistoryAPIClient(pluginId, baseUrl) {
         });
     }
 
+    this.callGetUniqueCustomerNames = function(responseHandler){
+        $.ajax({
+            url: this.baseUrl + "plugin/"+this.pluginId+"/getUniqueCustomerNames",
+            type: "GET"
+        }).done(function( data ){
+            responseHandler(data)
+        });
+    }
 
 }

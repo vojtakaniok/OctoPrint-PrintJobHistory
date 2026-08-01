@@ -1,4 +1,3 @@
-
 function PrintJobHistoryEditDialog(){
 
     var self = this;
@@ -33,6 +32,8 @@ function PrintJobHistoryEditDialog(){
 
     this.snapshotUploadName = ko.observable();
     this.snapshotUploadInProgress = ko.observable(false);
+
+    self.customerNames = ko.observableArray([]);
 
     self.webCamSettings = null;
 
@@ -297,6 +298,11 @@ function PrintJobHistoryEditDialog(){
 
         // Select first Tab
         $('a[href="#tab-pjh-editjob-total"]').tab("show");
+
+        // Fetch unique customer names
+        self.apiClient.callGetUniqueCustomerNames(function(names){
+            self.customerNames(names);
+        });
 
         self.editPrintJobItemDialog.modal({
             //minHeight: function() { return Math.max($.fn.modal.defaults.maxHeight() - 80, 250); }

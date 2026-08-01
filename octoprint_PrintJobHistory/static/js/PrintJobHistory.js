@@ -39,6 +39,7 @@ $(function() {
         // Init Item
 		this.databaseId = ko.observable();
 		this.userName = ko.observable();
+		this.customerName = ko.observable();
 		this.fileName = ko.observable();
 		this.filePathName = ko.observable();
 		this.fileSize = ko.observable();
@@ -129,6 +130,7 @@ $(function() {
 
         this.databaseId(updateData.databaseId);
         this.userName(updateData.userName);
+        this.customerName(updateData.customerName);
         this.fileName(updateData.fileName);
         this.filePathName(updateData.filePathName);
         this.fileSize(updateData.fileSize)
@@ -273,6 +275,7 @@ $(function() {
                 "duration" : "",
                 "durationFormatted" : "",
                 "fileName" : "",
+                "customerName" : "",
                 "fileSize" : "",
                 "fileSizeFormatted" : "",
                 "temperatureBed" : "0.0",
@@ -1181,3 +1184,4 @@ $(function() {
         ]
     });
 });
+

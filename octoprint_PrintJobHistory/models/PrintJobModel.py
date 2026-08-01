@@ -13,6 +13,7 @@ from peewee import CharField, Model, DecimalField, FloatField, DateField, DateTi
 class PrintJobModel(BaseModel):
 
 	userName = CharField(null=True)
+	customerName = CharField(null=True)
 	fileOrigin = CharField(null=True)	#new since db-scheme2
 	fileName = CharField(null=True)
 	filePathName = CharField(null=True)
