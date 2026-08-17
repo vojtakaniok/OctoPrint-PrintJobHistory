@@ -587,13 +587,18 @@ class PrintJobHistoryPlugin(
 			# TODO: should be replaced with a proper exposed function call
 			# Especially getting the selected spools via a protected _settings variable is BAD
 			spools_available = self._spoolmanPluginImplementation.getSpoolmanConnector().handleGetSpoolsAvailable()
-			selected_spool_ids = self._spoolmanPluginImplementation._settings.get(['selectedSpoolIds'])
+			if (spools_available.get('error', False)):
+				self._logger.warning("Could not read spools from Spoolman")
+				return result
+
+			selected_spool_ids = self._spoolmanPluginImplementation._settings.get(['selectedSpoolIds']) or {}
 
 			spool_by_id = {str(spool['id']): spool for spool in spools_available['data']['spools']}
 
 			spools = {}
 			for tool_id, spool_id in selected_spool_ids.items():
-				spool = spool_by_id.get(spool_id['spoolId'])
+				selected_spool_id = spool_id.get('spoolId')
+				spool = spool_by_id.get(str(selected_spool_id))
 				if spool:
 					spools[tool_id] = spool
 				else:
@@ -602,17 +607,23 @@ class PrintJobHistoryPlugin(
 			result = {}
 			for toolId, spoolData in spools.items():
 				if (spoolData != None):
-					toolId = "tool" + toolId
-					spoolName = spoolData["filament"]["name"]
-					weight = spoolData["filament"]["weight"]
-					spoolCost = spoolData["price"]
+					toolId = "tool" + str(toolId)
+					filamentData = spoolData.get("filament", {})
+					vendorData = filamentData.get("vendor") or {}
 
-					material = spoolData["filament"]["material"]
-					vendor = spoolData["filament"]["vendor"]["name"]
-					density = spoolData["filament"]["density"]
-					diameter = spoolData["filament"]["diameter"]
+					spoolName = filamentData.get("name")
+					weight = filamentData.get("weight")
+					if (weight == None and spoolData.get("remaining_weight") != None and spoolData.get("used_weight") != None):
+						weight = spoolData.get("remaining_weight") + spoolData.get("used_weight")
+					spoolCost = spoolData.get("price")
+
+					material = filamentData.get("material")
+					vendor = vendorData.get("name")
+					density = filamentData.get("density")
+					diameter = filamentData.get("diameter")
 
 					result[toolId] = {
+						"databaseId": spoolData.get("id"),
 						"spoolName": spoolName,
 						"material": material,
 						"vendor":  vendor,
@@ -622,7 +633,7 @@ class PrintJobHistoryPlugin(
 						"weight": weight
 					}
 					self._logger.info(
-						" reading for '" + toolId + "',  Spool: '" + spoolName + "', Material: '" + material + "', Vendor: '" + vendor + "'")
+						" reading for '" + toolId + "',  Spool: '" + str(spoolName) + "', Material: '" + str(material) + "', Vendor: '" + str(vendor) + "'")
 			pass
 		elif (SettingsKeys.KEY_SELECTED_FILAMENTMANAGER_PLUGIN == filamentTrackerPlugin):
 			self._logger.info("Try reading filament from FilamentManager...")
