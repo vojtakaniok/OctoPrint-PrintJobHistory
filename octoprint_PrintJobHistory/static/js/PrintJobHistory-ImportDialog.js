@@ -64,8 +64,7 @@ function PrintJobHistoryImportDialog(){
                         case "running":
                             self.currentLineNumber(importData.currenLineNumber);
                             self.successMessages(importData.successMessages);
-                            errorMessage = importData.errorCollection.join(" <br> ")
-                            self.errorMessages(errorMessage);
+                            self.errorMessages(importData.errorCollection.join(" <br> "));
                             self.importInProgress(true);
                             break;
                         case "finished":
@@ -74,8 +73,7 @@ function PrintJobHistoryImportDialog(){
                             self.backupFilePath(importData.backupFilePath);
                             self.backupSnapshotFilePath(importData.backupSnapshotFilePath);
                             self.successMessages(importData.successMessages);
-                            errorMessage = importData.errorCollection.join(" <br> ")
-                            self.errorMessages(errorMessage);
+                            self.errorMessages(importData.errorCollection.join(" <br> "));
 
                             self.shouldTableReload = true;
 

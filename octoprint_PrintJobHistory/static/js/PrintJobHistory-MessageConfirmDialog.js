@@ -5,7 +5,7 @@ function PrintJobHistoryPluginMessageConfirmDialog(){
     var self = this;
 
     self.apiClient = null;
-    myPluginSettings = null;
+    var myPluginSettings = null;
 
     self.messageConfirmDialog = null;
     self.confirmMessage = null;

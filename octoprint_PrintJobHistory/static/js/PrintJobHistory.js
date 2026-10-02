@@ -35,7 +35,8 @@ $(function() {
     ////////////////////////////////////////////////////////////
     var PrintJobItem = function(data) {
 
-        self = this;
+        var self = this;
+
         // Init Item
 		this.databaseId = ko.observable();
 		this.userName = ko.observable();
@@ -88,7 +89,7 @@ $(function() {
 		this.currencySymbol = ko.observable();
 		this.withDefaultSpoolValues = ko.observable();
 
-		recalculateTotalCosts = function(newValue){
+		var recalculateTotalCosts = function(newValue){
 		    var filamentCost = toFloatOrZero(self.filamentCost());
 		    var electricityCost = toFloatOrZero(self.electricityCost());
 		    var printerCost = toFloatOrZero(self.printerCost());
@@ -154,7 +155,7 @@ $(function() {
 
         // Flatten all releations
         // Temperature
-        tempDataArray = updateData["temperatureModels"];
+        var tempDataArray = updateData["temperatureModels"];
         // Just grab the first value
         if (tempDataArray != null && tempDataArray.length >=2) {
             this.temperatureBed(tempDataArray[0].sensorValue);
@@ -183,7 +184,7 @@ $(function() {
             this.allToolKeys = Object.keys(this.allFilamentModels);
             this.allToolKeys = this.allToolKeys.sort(); // total must be on the bottom
             this.isMultiToolPrint(Object.keys(this.allFilamentModels).length > 1)
-            totalFilamentModel = updateData.filamentModels["total"];    // should always be present
+            var totalFilamentModel = updateData.filamentModels["total"];    // should always be present
             // should never happen, but in the past we have some jobs where "total" is missing
             if (totalFilamentModel != null){
                 this.diameter(totalFilamentModel.diameter);
@@ -409,7 +410,7 @@ $(function() {
         ////////////////////////////////////////////////////// Knockout model-binding/observer
 
         ///////////////////////////////////////////////////// START: HELPER
-        loadSettingsFromBrowserStore = function(){
+        var loadSettingsFromBrowserStore = function(){
             initTableVisibilities();
 
             // TODO maybe in a separate js-file
@@ -457,7 +458,7 @@ $(function() {
         self.downloadDatabaseUrl = ko.observable();
         self.cameraSnapShotURLAvailable = ko.observable(false);
 
-        isSnapshotUrlPresent = function(snapshotUrl){
+        var isSnapshotUrlPresent = function(snapshotUrl){
             return snapshotUrl != null && snapshotUrl.trim().length != 0;
         }
         self.initCameraSettingsBehaviour = function(){
@@ -523,9 +524,6 @@ $(function() {
             },
             error: function(response, data, errorMessage){
                 self.csvImportInProgress(false);
-                statusCode = response.status;       // e.g. 400
-                statusText = response.statusText;   // e.g. BAD REQUEST
-                responseText = response.responseText; // e.g. Invalid request
             }
         });
 
@@ -602,9 +600,6 @@ $(function() {
             },
             error: function(response, data, errorMessage){
                 self.singlePrintJobReportTemplateInProgress(false);
-                statusCode = response.status;       // e.g. 400
-                statusText = response.statusText;   // e.g. BAD REQUEST
-                responseText = response.responseText; // e.g. Invalid request
             }
         });
         self.multiPrintJobReportTemplateUploadButton.fileupload({
@@ -631,9 +626,6 @@ $(function() {
             },
             error: function(response, data, errorMessage){
                 self.multiPrintJobReportTemplateInProgress(false);
-                statusCode = response.status;       // e.g. 400
-                statusText = response.statusText;   // e.g. BAD REQUEST
-                responseText = response.responseText; // e.g. Invalid request
             }
         });
 
@@ -858,9 +850,9 @@ $(function() {
             });
         }
 
-        printJobDialogCloseHandler = function(shouldTableReload){
+        var printJobDialogCloseHandler = function(shouldTableReload){
             // refresh snapshotImage
-            printJob = self.printJobForEditing();
+            var printJob = self.printJobForEditing();
             var snapshotImageId = "#"+self.snapshotImageId(printJob);
             var snapshotImage = $(snapshotImageId);
             var snapshotUrl = snapshotImage.attr("src");
@@ -873,7 +865,7 @@ $(function() {
             if (self.printJobToShowAfterStartup != null){
                 // PrintJob was presented to user and user confirmed
                 self.printJobToShowAfterStartup = null;
-                payload = {
+                var payload = {
                     "showPrintJobDialogAfterPrint_jobId": null
                 };
                 OctoPrint.settings.savePluginSettings(PLUGIN_ID, payload);
@@ -903,14 +895,14 @@ $(function() {
 
         ///////////////////////////////////////////////////// START: TABLE BEHAVIOR
 
-        initTableVisibilities = function(){
+        var initTableVisibilities = function(){
             // load all settings from browser storage
             if (!Modernizr.localstorage) {
                 // damn!!!
                 return false;
             }
 
-            assignVisibility = function(attributeName){
+            var assignVisibility = function(attributeName){
                 var storageKey = "pjh.table.visible." + attributeName;
                 if (localStorage[storageKey] == null){
                     localStorage[storageKey] = true
@@ -964,12 +956,12 @@ $(function() {
         }
 
 
-        loadJobFunction = function(tableQuery, observableTableModel, observableTotalItemCount, observableCurrentItemCount){
+        var loadJobFunction = function(tableQuery, observableTableModel, observableTotalItemCount, observableCurrentItemCount){
             // api-call
             self.apiClient.callLoadPrintJobsByQuery(tableQuery, function(responseData){
                 // handle response
-                totalItemCount = responseData["totalItemCount"];
-                allPrintJobs = responseData["allPrintJobs"];
+                var totalItemCount = responseData["totalItemCount"];
+                var allPrintJobs = responseData["allPrintJobs"];
                 var dataRows = ko.utils.arrayMap(allPrintJobs, function (data) {
                     return new PrintJobItem(data);
                 });

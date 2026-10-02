@@ -61,11 +61,11 @@ function ResetSettingsUtilV3(pluginSettings){
                             });
                             // reset all values
                             for(var propName in data){
-                                propValue = data[propName];
+                                var propValue = data[propName];
                                 // nested object, like databaseSettings? only a depth of 1
                                 if ("object" == typeof(propValue)){
                                     for(var subPropName in propValue){
-                                        subPropValue = propValue[subPropName];
+                                        var subPropValue = propValue[subPropName];
 //                                        console.log(propName + '-' + subPropName + ':' + subPropValue);
                                         pluginSettingsFromPlugin[propName][subPropName](propValue);
                                     }

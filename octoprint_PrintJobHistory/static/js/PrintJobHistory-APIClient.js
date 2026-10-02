@@ -62,8 +62,8 @@ function PrintJobHistoryAPIClient(pluginId, baseUrl) {
     }
 
     this.callCreateMultiReportUrl = function (tableQuery){
-        query = _buildRequestQuery(tableQuery);
-        urlToCall = this.baseUrl + "./plugin/"+this.pluginId+"/multiPrintJobReport?"+query;
+        var query = _buildRequestQuery(tableQuery);
+        var urlToCall = this.baseUrl + "./plugin/"+this.pluginId+"/multiPrintJobReport?"+query;
         return _addApiKeyIfNecessary(urlToCall);
     }
 
@@ -84,8 +84,8 @@ function PrintJobHistoryAPIClient(pluginId, baseUrl) {
 
     // load FILTERED/SORTED PrintJob-Items
     this.callLoadPrintJobsByQuery = function (tableQuery, responseHandler){
-        query = _buildRequestQuery(tableQuery);
-        urlToCall = this.baseUrl + "plugin/"+this.pluginId+"/loadPrintJobHistoryByQuery?"+query;
+        var query = _buildRequestQuery(tableQuery);
+        var urlToCall = this.baseUrl + "plugin/"+this.pluginId+"/loadPrintJobHistoryByQuery?"+query;
         $.ajax({
             //url: API_BASEURL + "plugin/"+PLUGIN_ID+"/loadPrintJobHistory",
             url: urlToCall,
@@ -99,8 +99,8 @@ function PrintJobHistoryAPIClient(pluginId, baseUrl) {
     }
     // load STATISTICS PrintJob-Items
     this.callLoadStatisticsByQuery = function (tableQuery, responseHandler){
-        query = _buildRequestQuery(tableQuery);
-        urlToCall = this.baseUrl + "plugin/"+this.pluginId+"/loadStatisticByQuery?"+query;
+        var query = _buildRequestQuery(tableQuery);
+        var urlToCall = this.baseUrl + "plugin/"+this.pluginId+"/loadStatisticByQuery?"+query;
         $.ajax({
             //url: API_BASEURL + "plugin/"+PLUGIN_ID+"/loadPrintJobHistory",
             url: urlToCall,
@@ -115,7 +115,7 @@ function PrintJobHistoryAPIClient(pluginId, baseUrl) {
 
     // load COMPARE SlicerSettigs
     this.callCompareSlicerSettings = function (selectedJobDatabaseIds, responseHandler){
-        urlToCall = this.baseUrl + "plugin/"+this.pluginId+"/compareSlicerSettings/?databaseIds="+selectedJobDatabaseIds;
+        var urlToCall = this.baseUrl + "plugin/"+this.pluginId+"/compareSlicerSettings/?databaseIds="+selectedJobDatabaseIds;
         $.ajax({
             url: urlToCall,
             type: "GET"
@@ -142,7 +142,7 @@ function PrintJobHistoryAPIClient(pluginId, baseUrl) {
 
     // remove PrintJob-Item
     this.callStorePrintJob = function (databaseId, printJobItem, responseHandler){
-        jsonPayload = ko.toJSON(printJobItem)
+        var jsonPayload = ko.toJSON(printJobItem)
 
         $.ajax({
             //url: API_BASEURL + "plugin/"+PLUGIN_ID+"/loadPrintJobHistory",

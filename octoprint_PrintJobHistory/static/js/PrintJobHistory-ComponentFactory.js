@@ -12,10 +12,10 @@ function PrintJobComponentFactory(pluginId) {
     </div>
     */
     this.createDateTimePicker = function(elementId, showTimePicker){
+        var dateTimeFormat = 'd.m.Y H:i';
 
         if (showTimePicker == null){
             showTimePicker = true;
-            dateTimeFormat = 'd.m.Y H:i';
         }
         if (showTimePicker == false){
             dateTimeFormat = 'd.m.Y';
@@ -67,13 +67,13 @@ function PrintJobComponentFactory(pluginId) {
 */
     this.createHelloWorldComponent = function(name){
 
-        componentName = this.COMPONENT_PREFIX + "printstatusselection-" + name;
+        var componentName = this.COMPONENT_PREFIX + "printstatusselection-" + name;
 
         var componentViewModel = {
             hello: ko.observable("World")
         }
 
-        componentTemplate = "<b>Hello <span data-bind='text: hello'></span></b>";
+        var componentTemplate = "<b>Hello <span data-bind='text: hello'></span></b>";
 
         ko.components.register(componentName, {
             viewModel: { instance: componentViewModel },

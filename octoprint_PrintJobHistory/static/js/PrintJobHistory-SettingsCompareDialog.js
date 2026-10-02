@@ -79,13 +79,13 @@ function CompareSlicerSettingsDialog(){
                 var compareResult = JSON.parse(responseData);
                 // Fill headers
                 self.compareResultTableHeaders.push({fileName:"Keys"});
-                for (slicerSettingJob of compareResult.slicerSettingsJobList){
+                for (var slicerSettingJob of compareResult.slicerSettingsJobList){
                     self.compareResultTableHeaders.push({fileName:slicerSettingJob.fileName});
                 }
                 // Fill rows
-                for (currentKey of compareResult.allKeys){
+                for (var currentKey of compareResult.allKeys){
                     var rowItem = [{value:currentKey}];
-                    for (currentJob of compareResult.slicerSettingsJobList) {
+                    for (var currentJob of compareResult.slicerSettingsJobList) {
                         var keyValue = currentJob.keyValuesSettings[currentKey];
                         rowItem.push(keyValue)
                     }

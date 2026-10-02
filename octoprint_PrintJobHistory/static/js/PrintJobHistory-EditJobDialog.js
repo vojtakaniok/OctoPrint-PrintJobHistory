@@ -243,7 +243,7 @@ function PrintJobHistoryEditDialog(){
                 self.noteEditor.setContents(null, 'api');
             }
         } else {
-            deltaFormat = JSON.parse(printJobItemForEdit.noteDeltaFormat());
+            var deltaFormat = JSON.parse(printJobItemForEdit.noteDeltaFormat());
             self.noteEditor.setContents(deltaFormat, 'api');
         }
 
@@ -263,7 +263,7 @@ function PrintJobHistoryEditDialog(){
         // some magic, if in edit mode
 
 
-        calcDuration = function(){
+        var calcDuration = function(){
             // update duration only in edit-mode
             if (self.fullEditMode() == false){
                 return;
@@ -327,7 +327,7 @@ function PrintJobHistoryEditDialog(){
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////// SAVE PRINT JOB ITEM
-    isEmpty = function(value){
+    var isEmpty = function(value){
         if (value == null){
             return true;
         }
@@ -442,8 +442,8 @@ function PrintJobHistoryEditDialog(){
             // SHOW VIDEOSTREAM
             self.imageDisplayMode(IMAGEDISPLAYMODE_VIDEOSTREAM_LOADING);
 
-            snapshotUrl = self.webCamSettings.snapshotUrl();
-            streamUrl = self.webCamSettings.streamUrl();
+            var snapshotUrl = self.webCamSettings.snapshotUrl();
+            var streamUrl = self.webCamSettings.streamUrl();
 
             if (snapshotUrl == null || streamUrl == null || snapshotUrl.length == 0 || streamUrl.length == 0) {
                 alert("Camera-Error: Please make sure that both stream- and snapshot-url is configured in your camera-settings")
@@ -500,7 +500,7 @@ function PrintJobHistoryEditDialog(){
                 var now = new Date().getTime();
                 var captureDuration = now-startShutter;
                 if (captureDuration < (SHUTTER_DURATION*1000)){
-                    waitingDelta = (SHUTTER_DURATION*1000) - captureDuration
+                    var waitingDelta = (SHUTTER_DURATION*1000) - captureDuration
                     setTimeout(function() {
                         self.imageDisplayMode(IMAGEDISPLAYMODE_SNAPSHOTIMAGE);
                     }, waitingDelta);
