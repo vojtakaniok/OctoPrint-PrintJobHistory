@@ -146,8 +146,18 @@ class CameraManager(object):
             zipf.write(os.path.join(path), path)
         zipf.close()
 
+    def _webcamSetting(self, key):
+        try:
+            # OctoPrint >= 1.9
+            from octoprint.webcams import get_snapshot_webcam
+            config = get_snapshot_webcam().config
+            return config.compat.snapshot if key == "snapshot" else getattr(config, key)
+        except (ImportError, AttributeError):
+            # OctoPrint < 1.9
+            return self._globalSettings.global_get(["webcam", key])
+
     def isCamaraSnahotURLPresent(self):
-        snapshotUrl = self._globalSettings.global_get(["webcam", "snapshot"])
+        snapshotUrl = self._webcamSetting("snapshot")
         if (snapshotUrl is None or len(str(snapshotUrl).strip()) == 0):
             return False
         return True
@@ -169,18 +179,18 @@ class CameraManager(object):
 
 
         # streamUrl = self._settings.global_get(["webcam", "stream"])
-        snapshotUrl =  self._globalSettings.global_get(["webcam", "snapshot"])
+        snapshotUrl =  self._webcamSetting("snapshot")
 
-        self._logger.info("Try taking snapshot '" + snapshotFilename + "' from '" + snapshotUrl + "'")
+        self._logger.info("Try taking snapshot '" + snapshotFilename + "' from '" + str(snapshotUrl) + "'")
         if (snapshotUrl is None or len(str(snapshotUrl).strip()) == 0):
             self._logger.info("No snapshot camera url defined!")
             if (callbackFunction is not None):
                 callbackFunction(False)
             return
 
-        rotate = self._globalSettings.global_get(["webcam", "rotate90"])
-        flipH = self._globalSettings.global_get(["webcam", "flipH"])
-        flipV = self._globalSettings.global_get(["webcam", "flipV"])
+        rotate = self._webcamSetting("rotate90")
+        flipH = self._webcamSetting("flipH")
+        flipV = self._webcamSetting("flipV")
 
         try:
             response = requests.get(snapshotUrl, verify=not True,timeout=float(10))
