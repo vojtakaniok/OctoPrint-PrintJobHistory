@@ -27,59 +27,52 @@ function PrintJobHistoryAPIClient(pluginId, baseUrl) {
 
     };
 
-    var _addApiKeyIfNecessary = function(urlContext){
-        if (UI_API_KEY){
-            urlContext = urlContext + "?apikey=" + UI_API_KEY;
-        }
-        return urlContext;
-    }
-
     this.getDownloadDatabaseUrl = function(exportType){
-        return _addApiKeyIfNecessary("./plugin/" + this.pluginId + "/downloadDatabase");
+        return "./plugin/" + this.pluginId + "/downloadDatabase";
     }
 
     this.getSampleCSVUrl = function(){
-        return _addApiKeyIfNecessary("./plugin/" + this.pluginId + "/sampleCSV");
+        return "./plugin/" + this.pluginId + "/sampleCSV";
     }
 
     this.getExportUrl = function(exportType){
-        return _addApiKeyIfNecessary("./plugin/" + this.pluginId + "/exportPrintJobHistory/" + exportType);
+        return "./plugin/" + this.pluginId + "/exportPrintJobHistory/" + exportType;
     }
 
     this.getProxiedSnapshotUrl = function(snapshotFilename){
         http://localhost:5000/plugin/PrintJobHistory/mysnapshot
-        return _addApiKeyIfNecessary("./plugin/" + this.pluginId + "/mysnapshot");
+        return "./plugin/" + this.pluginId + "/mysnapshot";
     }
 
     this.getSnapshotUrl = function(snapshotFilename){
         //http://localhost:5000/plugin/PrintJobHistory/printJobSnapshot/20191003-153311
-        return _addApiKeyIfNecessary("./plugin/" + this.pluginId + "/printJobSnapshot/" + snapshotFilename);
+        return "./plugin/" + this.pluginId + "/printJobSnapshot/" + snapshotFilename;
     }
 
     this.callCreateSingleReportUrl = function(databaseId){
         //http://localhost:5000/plugin/PrintJobHistory/singlePrintJobReport/5
-        return _addApiKeyIfNecessary("./plugin/" + this.pluginId + "/singlePrintJobReport/" + databaseId);
+        return "./plugin/" + this.pluginId + "/singlePrintJobReport/" + databaseId;
     }
 
     this.callCreateMultiReportUrl = function (tableQuery){
         query = _buildRequestQuery(tableQuery);
         urlToCall = this.baseUrl + "./plugin/"+this.pluginId+"/multiPrintJobReport?"+query;
-        return _addApiKeyIfNecessary(urlToCall);
+        return urlToCall;
     }
 
     this.getMultiReportUrl = function(databaseId){
         //http://localhost:5000/plugin/PrintJobHistory/multiPrintJobReport/5
-        return _addApiKeyIfNecessary("./plugin/" + this.pluginId + "/multiPrintJobReport/" + databaseId);
+        return "./plugin/" + this.pluginId + "/multiPrintJobReport/" + databaseId;
     }
 
     this.getPrintJobReportTemplateUrl = function(reportType){
         //http://localhost:5000/plugin/PrintJobHistory/downloadSinglePrintJobReportTemplate
-        return _addApiKeyIfNecessary("./plugin/" + this.pluginId + "/downloadPrintJobReportTemplate/" + reportType);
+        return "./plugin/" + this.pluginId + "/downloadPrintJobReportTemplate/" + reportType;
     }
 
     this.uploadSnapshotUrl = function(snapshotFilename){
         //http://localhost:5000/plugin/PrintJobHistory/printJobSnapshot/20191003-153311
-        return _addApiKeyIfNecessary("./plugin/" + this.pluginId + "/upload/snapshot/" + snapshotFilename);
+        return "./plugin/" + this.pluginId + "/upload/snapshot/" + snapshotFilename;
     }
 
     // load FILTERED/SORTED PrintJob-Items
