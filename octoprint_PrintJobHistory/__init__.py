@@ -7,6 +7,7 @@ import time
 
 import octoprint.plugin
 from octoprint.events import Events
+from octoprint.util.version import is_octoprint_compatible
 
 import datetime
 import math
@@ -229,10 +230,10 @@ class PrintJobHistoryPlugin(
 				if self._displayLayerProgressPluginImplementation is None:
 					missingMessage = missingMessage + "<li><a target='_newTab' href='https://plugins.octoprint.org/plugins/DisplayLayerProgress/'>DisplayLayerProgress (" + str(displayLayerRequiredVersion) + "+)</a> (<b>" + self._displayLayerProgressPluginImplementationState + "</b>)</li>"
 
-				if self._ultimakerFormatPluginImplementation is None:
+				if self._ultimakerFormatPluginImplementation is None and is_octoprint_compatible("<2.0.0"):
 					missingMessage = missingMessage + "<li><a target='_newTab' href='https://plugins.octoprint.org/plugins/UltimakerFormatPackage/'>Cura Thumbnails (" + str(ultimakerRequiredVersion) + "+)</a> (<b>" + self._ultimakerFormatPluginImplementationState + "</b>)</li>"
 
-				if self._prusaSlicerThumbnailsPluginImplementation is None:
+				if self._prusaSlicerThumbnailsPluginImplementation is None and is_octoprint_compatible("<2.0.0"):
 					missingMessage = missingMessage + "<li><a target='_newTab' href='https://plugins.octoprint.org/plugins/prusaslicerthumbnails/'>PrusaSlicer Thumbnails (" + str(pruseSlicerRequiredVersion) + "+)</a> (<b>" + self._prusaSlicerThumbnailsPluginImplementationState + "</b>)</li>"
 
 				if self._costEstimationPluginImplementation is None:
@@ -1170,7 +1171,15 @@ class PrintJobHistoryPlugin(
 		thumbnailPresent = False
 		metadata = self._file_manager.get_metadata(payload["origin"], payload["path"])
 		# check if available
-		if ("thumbnail" in metadata):
+		if (hasattr(self._file_manager, "has_thumbnail") and self._file_manager.has_thumbnail(payload["origin"], payload["path"])):
+			# Thumbnail provided by OctoPrint itself (2.x only)
+			thumbnailPresent = True
+			if (storeImage):
+				thumbnail = self._file_manager.read_thumbnail(payload["origin"], payload["path"])[1]
+				self._cameraManager.takeOctoPrintThumbnail(CameraManager.buildSnapshotFilename(self._currentPrintJobModel.printStartDateTime), thumbnail)
+				thumbnail.close()
+		elif ("thumbnail" in metadata):
+			# Thumbnail provided by another plugin
 			thumbnailPresent = self._cameraManager.takePluginThumbnail(
 				CameraManager.buildSnapshotFilename(self._currentPrintJobModel.printStartDateTime),
 				metadata["thumbnail"],

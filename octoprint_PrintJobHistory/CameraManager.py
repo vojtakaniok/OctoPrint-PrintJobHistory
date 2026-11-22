@@ -236,6 +236,12 @@ class CameraManager(object):
         thread.start()
 
 
+    def takeOctoPrintThumbnail(self, snapshotFilename, thumbnail):
+        im = Image.open(thumbnail).convert("RGBA")
+        bg = Image.new("RGBA", im.size, (255, 255, 255, 9))
+        bg.paste(im, im)
+        bg.save(self._snapshotStoragePath + "/" + snapshotFilename + ".png", 'PNG')
+
     def takePluginThumbnail(self, snapshotFilename, thumbnailLocation, storeImage = True):
 
         if str(snapshotFilename).endswith(".png"):
