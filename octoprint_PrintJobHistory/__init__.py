@@ -1390,6 +1390,9 @@ class PrintJobHistoryPlugin(
 		self._databaseManager.showSQLLogging(sqlLoggingEnabled)
 
 
+	##~~ SimpleApiPlugin mixin
+	def is_api_protected(self):
+		return True
 
 	# to allow the frontend to trigger an GET call
 	def on_api_get(self, request):
