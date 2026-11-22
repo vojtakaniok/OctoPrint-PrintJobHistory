@@ -74,5 +74,4 @@ class SettingsKeys():
 	SETTINGS_KEY_SQL_LOGGING_ENABLED = "sqlLoggingEnabled"
 
 	# Other stuff
-	SETTINGS_KEY_MESSAGE_CONFIRM_DATA = "messageConfirmData"
 	SETTINGS_KEY_LAST_PLUGIN_DEPENDENCY_CHECK = "lastPluginDependencyCheck"

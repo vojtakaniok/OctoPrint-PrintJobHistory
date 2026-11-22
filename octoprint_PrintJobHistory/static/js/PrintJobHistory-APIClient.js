@@ -143,13 +143,6 @@ function PrintJobHistoryAPIClient(pluginId, baseUrl) {
         });
     }
 
-    // confirm the message dialog
-    this.callConfirmMessageDialog =  function (){
-        OctoPrint.put("plugin/"+ this.pluginId +"/confirmMessageDialog").done(function( data ){
-            //responseHandler(data)
-        });
-    }
-
     // deactivate the Plugin/Check
     this.callDeactivatePluginCheck =  function (){
         OctoPrint.put("plugin/"+ this.pluginId +"/deactivatePluginCheck").done(function( data ){

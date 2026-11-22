@@ -240,14 +240,6 @@ class PrintJobHistoryAPI(octoprint.plugin.BlueprintPlugin):
 ################################################### APIs
 
 
-    #######################################################################################   CONFIRM MESSAGE
-    @octoprint.plugin.BlueprintPlugin.route("/confirmMessageDialog", methods=["PUT"])
-    def put_confirmMessageDialog(self):
-        self._settings.set([SettingsKeys.SETTINGS_KEY_MESSAGE_CONFIRM_DATA], None)
-        self._settings.save()
-
-        return flask.jsonify([])
-
     #######################################################################################   DEACTIVATE PLUGIN CHECK
     @octoprint.plugin.BlueprintPlugin.route("/deactivatePluginCheck", methods=["PUT"])
     def put_pluginDependencyCheck(self):
@@ -934,7 +926,7 @@ class PrintJobHistoryAPI(octoprint.plugin.BlueprintPlugin):
 
     ################################################################################ PRINTJOB - RESET REPORT Template
     @octoprint.plugin.BlueprintPlugin.route("/resetPrintJobReportTemplate/<reportType>", methods=["PUT"])
-    def put_confirmMessageDialog(self, reportType):
+    def put_resetPrintJobReportTemplate(self, reportType):
         defaultReportTemplateName = ""
 
         if (reportType == "multi"):

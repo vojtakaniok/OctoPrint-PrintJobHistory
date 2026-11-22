@@ -375,14 +375,12 @@ $(function() {
         self.pluginCheckDialog = new PrintJobHistoryPluginCheckDialog();
         self.statisticDialog = new StatisticDialog();
         self.compareSlicerSettingsDialog = new CompareSlicerSettingsDialog();
-        self.messageConfirmDialog = new PrintJobHistoryPluginMessageConfirmDialog();
 
         self.printJobForEditing = ko.observable();
         self.printJobForEditing(new PrintJobItem(printHistoryJobItems[0]));
 
         self.printJobToShowAfterStartup = null;
         self.missingPluginDialogMessage = null;
-        self.confirmMessageDialogData = null;
 
         //self.tableAttributeVisibility = ko.observable();
         self.tableAttributeVisibility = new TableAttributeVisibility();
@@ -685,7 +683,6 @@ $(function() {
             self.pluginSettings = self.settingsViewModel.settings.plugins[PLUGIN_ID];
             self.printJobEditDialog.init(self.apiClient, self.settingsViewModel.settings.webcam);
             self.pluginCheckDialog.init(self.apiClient, self.pluginSettings);
-            self.messageConfirmDialog.init(self.apiClient, self.pluginSettings);
             self.csvImportDialog.init(self.apiClient);
             self.statisticDialog.init(self.apiClient);
             self.compareSlicerSettingsDialog.init(self.apiClient, self.busyIndicatorActive);
@@ -721,10 +718,6 @@ $(function() {
             if (self.missingPluginDialogMessage != null){
                 self.pluginCheckDialog.showMissingPluginsDialog(self.missingPluginDialogMessage);
                 self.missingPluginDialogMessage = null;
-            }
-            if (self.confirmMessageDialogData != null){
-                self.confirmMessageDialog.showDialog(self.confirmMessageDialogData);
-                self.confirmMessageDialogData = null;
             }
 
 
@@ -782,17 +775,6 @@ $(function() {
                 } else {
                     // save message for later use, because binding is also not finished, but we received a message from backend
                     self.missingPluginDialogMessage = data.message;
-                }
-                return;
-            }
-
-            if ("showMessageConfirmDialog" == data.action){
-                // NOT POSSIBLE, because init not done
-                if (self.confirmMessageDialog != null && self.confirmMessageDialog.isInitialized()){
-                    self.confirmMessageDialog.showDialog(data.confirmMessageData);
-                } else {
-                    // save message for later use, because binding is also not finished, but we received a message from backend
-                    self.confirmMessageDialogData = data.confirmMessageData;
                 }
                 return;
             }

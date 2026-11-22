@@ -128,14 +128,6 @@ class PrintJobHistoryPlugin(
 			}
 			self._sendDataToClient(payload)
 
-	def _sendMessageConfirmToClient(self, title, message):
-		confirmMessageData = {
-			"title": title,
-			"message": message
-		}
-		self._sendDataToClient(dict(action="showMessageConfirmDialog",
-									confirmMessageData=confirmMessageData))
-
 	def _checkAndLoadThirdPartyPluginInfos(self, sendToClient=False):
 		pluginInfo = self._getPluginInformation(SettingsKeys.PLUGIN_PREHEAT)
 		self._preHeatPluginImplementationState = pluginInfo[0]
@@ -1197,9 +1189,6 @@ class PrintJobHistoryPlugin(
 
 
 	#######################################################################################   OP - HOOKs
-	from queue import Queue
-	# from logging.handlers import QueueHandler
-	# from logging.handlers import QueueListener
 
 	def on_after_startup(self):
 		# check if needed plugins were available
@@ -1210,15 +1199,6 @@ class PrintJobHistoryPlugin(
 		# 	get_webcam_profiles = helpers["get_webcam_profiles"]
 		#
 		# 	self.camProfiles = get_webcam_profiles()
-
-		# que = Queue(10)
-		# queue_handler = MyQueueHandler(que)
-		#
-		# root = logging.getLogger()
-		# root.addHandler(queue_handler)
-		# self._technicalLoggingHandler = MyHandler()
-		# listener = logging.handlers.QueueListener(que, self._technicalLoggingHandler)
-		# listener.start()
 
 		logFilename = os.path.join(self._settings.getBaseFolder("logs"), "plugin_PrintJobHistory_singlePrintJob.log")
 		formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
@@ -1367,10 +1347,6 @@ class PrintJobHistoryPlugin(
 					except DoesNotExist:
 						self._settings.remove([SettingsKeys.SETTINGS_KEY_SHOW_PRINTJOB_DIALOG_AFTER_PRINT_JOB_ID])
 
-			messageConfirmData = self._settings.get([SettingsKeys.SETTINGS_KEY_MESSAGE_CONFIRM_DATA])
-			if (messageConfirmData is not None):
-				self._sendMessageConfirmToClient(messageConfirmData.title, messageConfirmData.message)
-
 			self._checkForMissingFilamentTracking()
 
 		elif Events.PRINT_STARTED == event:
@@ -1472,7 +1448,6 @@ class PrintJobHistoryPlugin(
 		settings[SettingsKeys.SETTINGS_KEY_SQL_LOGGING_ENABLED] = False
 
 		## Other stuff
-		settings[SettingsKeys.SETTINGS_KEY_MESSAGE_CONFIRM_DATA] = None
 		settings[SettingsKeys.SETTINGS_KEY_LAST_PLUGIN_DEPENDENCY_CHECK] = None
 
 
@@ -1508,7 +1483,6 @@ class PrintJobHistoryPlugin(
 				"js/PrintJobHistory.js",
 				"js/PrintJobHistory-APIClient.js",
 				"js/PrintJobHistory-PluginCheckDialog.js",
-				"js/PrintJobHistory-MessageConfirmDialog.js",
 				"js/PrintJobHistory-EditJobDialog.js",
 				"js/PrintJobHistory-ImportDialog.js",
 				"js/PrintJobHistory-StatisticDialog.js",
@@ -1620,64 +1594,3 @@ def __plugin_load__():
 # 	length = filamentAnalyseDict[toolId]["length"]
 # 	volumne = filamentAnalyseDict[toolId]["volume"]
 # 	print(toolId + " " + str(length))
-
-class MyHandler:
-	"""
-	A simple handler for logging events. It runs in the listener process and
-	dispatches events to loggers based on the name in the received record,
-	which then get dispatched, by the logging system, to the handlers
-	configured for those loggers.
-	"""
-	def __init__(self):
-		self.technicalLog = ""
-
-	def resetTechnicalLog(self):
-		self.technicalLog = ""
-
-	def getTechnicalLog(self):
-		return self.technicalLog
-
-	def handle(self, record):
-		# if record.name == "root":
-		#     logger = logging.getLogger()
-		# else:
-		#     logger = logging.getLogger(record.name)
-		#
-		# if logger.isEnabledFor(record.levelno):
-		#     # The process name is transformed just to show that it's the listener
-		#     # doing the logging to files and console
-		#     record.processName = '%s (for %s)' % (current_process().name, record.processName)
-		#     logger.handle(record)
-
-		# BOOOOMMM "AttributeError: 'LogRecord' object has no attribute 'asctime'"
-		# print("AAAAA****************************")
-		#print(record)
-		# asctime = record.asctime #2022-01-22 14:50:09,729
-		name = record.name #octoprint.plugins.SpoolManager
-		# module = record.module # SpoolManagerAPI
-		# levelname = record.levelname # DEBUG
-		message = record.message # API Load all spool
-
-		if (name.startswith("octoprint.plugins.PrintJobHistory")):
-			self.technicalLog = self.technicalLog + message + "\n"
-
-		# print("EEEEE****************************")
-		pass
-
-class MyQueueHandler(logging.handlers.QueueHandler):
-
-	def enqueue(self, record):
-		"""
-		Enqueue a record.
-
-		The base implementation uses put_nowait. You may want to override
-		this method if you want to use blocking, timeouts or custom queue
-		implementations.
-		"""
-		# print("*** Current len: " + str (self.queue.qsize()))
-		if (self.queue.full()):
-			print("Something wrong with the listener, because loggging queue is full. No new log-record is added.")
-		else:
-			self.queue.put_nowait(record)
-
-
