@@ -1482,6 +1482,9 @@ class PrintJobHistoryPlugin(
 			dict(type="settings", custom_bindings=True, name="Print Job History")
 		]
 
+	def is_template_autoescaped(self):
+		return True
+
 
 	##~~ AssetPlugin mixin
 	def get_assets(self):
