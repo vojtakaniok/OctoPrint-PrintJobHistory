@@ -7,6 +7,7 @@ import tempfile
 import threading
 
 import octoprint.plugin
+from octoprint.filemanager import FileDestinations
 from flask import request, Response, send_file
 import flask
 
@@ -335,8 +336,16 @@ class PrintJobHistoryAPI(octoprint.plugin.BlueprintPlugin):
                                         title="Print selection not possible",
                                         message=message))
             return flask.jsonify()
-        sd = False if (printJobModel.fileOrigin is not None and printJobModel.fileOrigin == "local") else True
-        self._printer.select_file(fullFileLocation, sd)
+
+        sd = printJobModel.fileOrigin not in (None, FileDestinations.LOCAL)
+        path = printJobModel.filePathName or printJobModel.fileName
+        if (hasattr(self._printer, "set_job")):
+            # OctoPrint 2.x
+            job = self._file_manager.create_job(FileDestinations.PRINTER if sd else FileDestinations.LOCAL, path)
+            self._printer.set_job(job)
+        else:
+            # OctoPrint 1.x
+            self._printer.select_file(path, sd)
 
         return flask.jsonify()
 
