@@ -358,7 +358,7 @@ class CostsCSVFormattorParser:
 
 			otherTokens = fieldValue.split(":")
 			if (len(otherTokens) != 2):
-				errorCollection.append(str(lineNumber) + ":Wrong format for 'Other Cost' need label:value<br/>")
+				errorCollection.append(str(lineNumber) + ":Wrong format for 'Other Cost' need label:value")
 				pass
 			label = otherTokens[0]
 			value = otherTokens[1]
@@ -508,7 +508,7 @@ def parseCSV(csvFile4Import, updateParsingStatus, errorCollection, logger, delet
 						# identify missing files
 						# mandatoryFieldMissing = mandatoryFieldNames - mandatoryFieldAvaiable
 						mandatoryFieldMissing = list( set(mandatoryFieldNames) - set(mandatoryFieldAvaiable) )
-						errorCollection.append("Mandatory column is missing! <br/><b>'" + "".join(mandatoryFieldMissing) + "'</b><br/>")
+						errorCollection.append("Mandatory column is missing!\n'" + "".join(mandatoryFieldMissing) + "'")
 						break
 				else:
 					# pre check, do we have values in the line?

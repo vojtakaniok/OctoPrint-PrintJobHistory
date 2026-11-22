@@ -35,13 +35,13 @@
             <div>Status: <b data-bind="text: csvImportDialog.importStatus"></b></div>
             <div data-bind="visible:csvImportDialog.currentLineNumber">Parsing/Importing line: <b data-bind="text: csvImportDialog.currentLineNumber"></b></div>
             <br/>
-            <div data-bind="visible:csvImportDialog.successMessages"><b data-bind="html: csvImportDialog.successMessages"></b></div>
+            <div data-bind="visible:csvImportDialog.successMessages"><b data-bind="text: csvImportDialog.successMessages"></b></div>
             <br/>
-            <div data-bind="visible:csvImportDialog.errorMessages"><b style="color:red" data-bind="html: csvImportDialog.errorMessages"></b></div>
+            <div data-bind="visible:csvImportDialog.errorMessages"><b style="color:red; white-space: pre-line" data-bind="text: csvImportDialog.errorMessages"></b></div>
             <br/>
-            <div data-bind="visible:csvImportDialog.backupFilePath">Backup Database: <b data-bind="html: csvImportDialog.backupFilePath"></b></div>
+            <div data-bind="visible:csvImportDialog.backupFilePath">Backup Database: <b data-bind="text: csvImportDialog.backupFilePath"></b></div>
             <br/>
-            <div data-bind="visible:csvImportDialog.backupSnapshotFilePath">Backup Snapshots: <b data-bind="html: csvImportDialog.backupSnapshotFilePath"></b></div>
+            <div data-bind="visible:csvImportDialog.backupSnapshotFilePath">Backup Snapshots: <b data-bind="text: csvImportDialog.backupSnapshotFilePath"></b></div>
         </div>
         <div class="modal-footer">
             <div class="control-group">

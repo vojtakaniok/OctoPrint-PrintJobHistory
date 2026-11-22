@@ -396,11 +396,13 @@ $(function() {
         self.isFilamentManagerInstalled = ko.observable(false);
 
         self.isPreHeatPluginAvailableText = ko.observable("unknown");
+        self.isPreHeatPluginAvailableColor = ko.observable("");
 
         self.databaseFileLocation = ko.observable();
         self.snapshotFileLocation = ko.observable();
 
         self.isCostEstimationPluginAvailableText = ko.observable("unknown");
+        self.isCostEstimationPluginAvailableColor = ko.observable("");
         self.currencySymbol = ko.observable();
         self.currencyFormat = ko.observable();
 
@@ -757,14 +759,18 @@ $(function() {
                 self.isFilamentManagerInstalled(data.isFilamentManagerInstalled);
 
                 if (data.isCostEstimationPluginAvailable == true){
-                    self.isCostEstimationPluginAvailableText("<span style='color:green'>available</span>");
+                    self.isCostEstimationPluginAvailableText("available");
+                    self.isCostEstimationPluginAvailableColor("green");
                 } else {
-                    self.isCostEstimationPluginAvailableText("<span style='color:red'>not available</span>");
+                    self.isCostEstimationPluginAvailableText("not available");
+                    self.isCostEstimationPluginAvailableColor("red");
                 }
                 if (data.isPreHeatPluginAvailable == true){
-                    self.isPreHeatPluginAvailableText("<span style='color:green'>available</span>");
+                    self.isPreHeatPluginAvailableText("available");
+                    self.isPreHeatPluginAvailableColor("green");
                 } else {
-                    self.isPreHeatPluginAvailableText("<span style='color:red'>not available</span>");
+                    self.isPreHeatPluginAvailableText("not available");
+                    self.isPreHeatPluginAvailableColor("red");
                 }
                 self.currencySymbol(data.currencySymbol);
                 self.currencyFormat(data.currencyFormat);

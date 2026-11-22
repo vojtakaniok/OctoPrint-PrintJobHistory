@@ -81,7 +81,7 @@
                     </div>
                 </div>
                 <hr/>
-                <div>Fallback if CostEstimation-Plugin is not available. (Status: <span data-bind="html:isCostEstimationPluginAvailableText"></span>)</div>
+                <div>Fallback if CostEstimation-Plugin is not available. (Status: <span data-bind="text: isCostEstimationPluginAvailableText, style: { color: isCostEstimationPluginAvailableColor }"></span>)</div>
                 <div class="control-group">
                     <label class="control-label">Currency symbol</label>
                     <div class="controls">
@@ -195,7 +195,7 @@ M300 S440 P100 ;Playing a beep
                 <div class="control-group">
                     <div class="">
                         <label class="checkbox">
-                            <input type="checkbox" data-bind="checked: pluginSettings.takeTemperatureFromPreHeatPlugin" > Take temperature values from PreHeat-Plugin (Status: <span data-bind="html:isPreHeatPluginAvailableText"></span>))
+                            <input type="checkbox" data-bind="checked: pluginSettings.takeTemperatureFromPreHeatPlugin" > Take temperature values from PreHeat-Plugin (Status: <span data-bind="text: isPreHeatPluginAvailableText, style: { color: isPreHeatPluginAvailableColor }"></span>))
                         </label>
                     </div>
                 </div>
