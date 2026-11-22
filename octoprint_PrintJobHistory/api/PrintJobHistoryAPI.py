@@ -251,7 +251,7 @@ class PrintJobHistoryAPI(octoprint.plugin.BlueprintPlugin):
     #######################################################################################   DEACTIVATE PLUGIN CHECK
     @octoprint.plugin.BlueprintPlugin.route("/deactivatePluginCheck", methods=["PUT"])
     def put_pluginDependencyCheck(self):
-        self._settings.setBoolean([SettingsKeys.SETTINGS_KEY_PLUGIN_DEPENDENCY_CHECK], False)
+        self._settings.set_boolean([SettingsKeys.SETTINGS_KEY_PLUGIN_DEPENDENCY_CHECK], False)
         self._settings.save()
 
         return flask.jsonify([])
