@@ -37,6 +37,5 @@ def _get_comparable_version_semantic(version_string, force_base=False):
 
 myVersion1 = _get_comparable_version_semantic(v1)
 myVersion2 = _get_comparable_version_semantic(v2)
-import semantic_version
 canBeUsed = myVersion1 >= myVersion2
 print(canBeUsed)

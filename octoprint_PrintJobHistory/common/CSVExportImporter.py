@@ -1,5 +1,3 @@
-import io
-from io import StringIO
 import csv
 import datetime
 import os
@@ -76,7 +74,7 @@ class CSVColumn:
 class DefaultCSVFormattorParser:
 
 	def formatValue(self, printJob, fieldName):
-		if (hasattr(printJob, fieldName) == False):
+		if (not hasattr(printJob, fieldName)):
 			return "-"
 		valueToFormat = getattr(printJob, fieldName)
 
@@ -90,7 +88,7 @@ class DefaultCSVFormattorParser:
 		return adjustedValue
 
 	def parseAndAssignFieldValue(self, fieldLabel, fieldName, fieldValue, printJobModel, errorCollection, lineNumber):
-		if ("" == fieldValue or "-" == fieldValue or fieldValue == None):
+		if ("" == fieldValue or "-" == fieldValue or fieldValue is None):
 			# check if mandatory
 			return
 		setattr(printJobModel, fieldName, fieldValue)
@@ -98,7 +96,7 @@ class DefaultCSVFormattorParser:
 class PrintStatusCSVFormattorParser:
 
 	def formatValue(self, printJob, fieldName):
-		if (hasattr(printJob, fieldName) == False):
+		if (not hasattr(printJob, fieldName)):
 			return "-"
 		valueToFormat = getattr(printJob, fieldName)
 
@@ -111,7 +109,7 @@ class PrintStatusCSVFormattorParser:
 		return adjustedValue
 
 	def parseAndAssignFieldValue(self, fieldLabel, fieldName, fieldValue, printJobModel, errorCollection, lineNumber):
-		if ("" == fieldValue or "-" == fieldValue or fieldValue == None):
+		if ("" == fieldValue or "-" == fieldValue or fieldValue is None):
 			# check if mandatory
 			return
 		SUCCESS = "success"
@@ -132,7 +130,7 @@ class PrintStatusCSVFormattorParser:
 class DateTimeCSVFormattorParser:
 
 	def formatValue(self, printJob, fieldName):
-		if (hasattr(printJob, fieldName) == False):
+		if (not hasattr(printJob, fieldName)):
 			return "-"
 		valueToFormat = getattr(printJob, fieldName)
 
@@ -143,7 +141,7 @@ class DateTimeCSVFormattorParser:
 		return valueToFormat
 
 	def parseAndAssignFieldValue(self, fieldLabel, fieldName, fieldValue, printJobModel, errorCollection, lineNumber):
-		if ("" == fieldValue or "-" == fieldValue or fieldValue == None):
+		if ("" == fieldValue or "-" == fieldValue or fieldValue is None):
 			# check if mandatory
 			return
 		if (":" in fieldValue):
@@ -160,7 +158,7 @@ class DateTimeCSVFormattorParser:
 class DurationCSVFormattorParser:
 
 	def formatValue(self, printJob, fieldName):
-		if (hasattr(printJob, fieldName) == False):
+		if (not hasattr(printJob, fieldName)):
 			return "-"
 		valueToFormat = getattr(printJob, fieldName)
 
@@ -170,7 +168,7 @@ class DurationCSVFormattorParser:
 		return adjustedValue
 
 	def parseAndAssignFieldValue(self, fieldLabel, fieldName, fieldValue, printJobModel, errorCollection, lineNumber):
-		if ("" == fieldValue or "-" == fieldValue or fieldValue == None):
+		if ("" == fieldValue or "-" == fieldValue or fieldValue is None):
 			# check if mandatory
 			return
 		try:
@@ -194,12 +192,12 @@ class TemperaturCSVFormattorParser:
 	tempPattern = re.compile("bed:([0-9]*\.?[0-9]*) (tool[0-9]):([0-9]*\.?[0-9]*)")
 
 	def formatValue(self, printJob, fieldName):
-		if (hasattr(printJob, fieldName) == False):
+		if (not hasattr(printJob, fieldName)):
 			return "-"
 
 		valueToFormat = getattr(printJob, fieldName)
 
-		if (valueToFormat == None):
+		if (valueToFormat is None):
 			valueToFormat = printJob.temperatures
 
 		if valueToFormat is None:
@@ -214,7 +212,7 @@ class TemperaturCSVFormattorParser:
 
 	def parseAndAssignFieldValue(self, fieldLabel, fieldName, fieldValue, printJobModel, errorCollection, lineNumber):
 
-		if ("" == fieldValue or "-" == fieldValue or fieldValue == None):
+		if ("" == fieldValue or "-" == fieldValue or fieldValue is None):
 			# check if mandatory
 			return
 		matched = self.tempPattern.match(fieldValue)
@@ -244,9 +242,9 @@ class FilamentCSVFormattorParser:
 
 		# only support for total model
 		totalFilamentModel = printJob.getFilamentModelByToolId("total")
-		if (totalFilamentModel == None):
+		if (totalFilamentModel is None):
 			return "-"
-		if (hasattr(totalFilamentModel, fieldName) == False):
+		if (not hasattr(totalFilamentModel, fieldName)):
 			return "-"
 		valueToFormat = getattr(totalFilamentModel, fieldName)
 
@@ -254,7 +252,7 @@ class FilamentCSVFormattorParser:
 			"calculatedLength" == fieldName or
 			"usedWeight" == fieldName):
 
-			if (valueToFormat != None and valueToFormat != "" and valueToFormat != "-"):
+			if (valueToFormat is not None and valueToFormat != "" and valueToFormat != "-"):
 				valueToFormat = StringUtils.formatFloatSave(StringUtils.FLOAT_DEFAULT_FORMAT, valueToFormat, "-")
 
 		if valueToFormat is None or "" == valueToFormat:
@@ -263,14 +261,14 @@ class FilamentCSVFormattorParser:
 		return valueToFormat
 
 	def parseAndAssignFieldValue(self, fieldLabel, fieldName, fieldValue, printJobModel, errorCollection, lineNumber):
-		if ("" == fieldValue or "-" == fieldValue or fieldValue == None):
+		if ("" == fieldValue or "-" == fieldValue or fieldValue is None):
 			# check if mandatory
 			return
 
 		# allFilemanentModel  = printJobModel.getFilamentModels()
 		filamanentModel = printJobModel.getFilamentModelByToolId("total")
 
-		if (filamanentModel == None):
+		if (filamanentModel is None):
 			filamanentModel  = FilamentModel()
 			filamanentModel.toolId = "total"
 			printJobModel.addFilamentModel(filamanentModel)
@@ -306,10 +304,10 @@ class CostsCSVFormattorParser:
 	def formatValue(self, printJob, fieldName):
 
 		costModel = printJob.getCosts()
-		if (costModel == None):
+		if (costModel is None):
 			return "-"
 
-		if (hasattr(costModel, fieldName) == False):
+		if (not hasattr(costModel, fieldName)):
 			return "-"
 
 		valueToFormat = getattr(costModel, fieldName)
@@ -318,7 +316,7 @@ class CostsCSVFormattorParser:
 			"electricityCost" == fieldName or
 			"printerCost" == fieldName or
 			"otherCost" == fieldName):
-			if (valueToFormat != None and valueToFormat != "" and valueToFormat != "-"):
+			if (valueToFormat is not None and valueToFormat != "" and valueToFormat != "-"):
 				valueToFormat = StringUtils.formatFloatSave(StringUtils.FLOAT_DEFAULT_FORMAT, valueToFormat, "-")
 				if ("otherCost" == fieldName):
 					otherCostLabel = ""
@@ -332,12 +330,12 @@ class CostsCSVFormattorParser:
 		return valueToFormat
 
 	def parseAndAssignFieldValue(self, fieldLabel, fieldName, fieldValue, printJobModel, errorCollection, lineNumber):
-		if ("" == fieldValue or "-" == fieldValue or fieldValue == None):
+		if ("" == fieldValue or "-" == fieldValue or fieldValue is None):
 			# check if mandatory
 			return
 
 		costModel = printJobModel.getCosts()
-		if (costModel == None):
+		if (costModel is None):
 			costModel  = CostModel()
 			costModel.withDefaultSpoolValues = True
 			printJobModel.setCosts(costModel)
@@ -360,7 +358,7 @@ class CostsCSVFormattorParser:
 
 			otherTokens = fieldValue.split(":")
 			if (len(otherTokens) != 2):
-				errorCollection.append(str(lineNumber) + ":Wrong format for 'Other Cost' need label:value<br/>")
+				errorCollection.append(str(lineNumber) + ":Wrong format for 'Other Cost' need label:value")
 				pass
 			label = otherTokens[0]
 			value = otherTokens[1]
@@ -435,11 +433,6 @@ ALL_COLUMNS = {
 ####################################################################################################### -> EXPORT TO CSV
 
 def transform2CSV(allJobsDict):
-	result = None
-	si = StringIO()	#TODO maybe a bad idea to use a internal memory based string, needs to be switched to response stream
-	# si = io.BytesIO()
-
-	writer = csv.writer(si, quoting=csv.QUOTE_ALL)
 	#  Write HEADER
 	headerList = list()
 	csvLine = ""
@@ -515,7 +508,7 @@ def parseCSV(csvFile4Import, updateParsingStatus, errorCollection, logger, delet
 						# identify missing files
 						# mandatoryFieldMissing = mandatoryFieldNames - mandatoryFieldAvaiable
 						mandatoryFieldMissing = list( set(mandatoryFieldNames) - set(mandatoryFieldAvaiable) )
-						errorCollection.append("Mandatory column is missing! <br/><b>'" + "".join(mandatoryFieldMissing) + "'</b><br/>")
+						errorCollection.append("Mandatory column is missing!\n'" + "".join(mandatoryFieldMissing) + "'")
 						break
 				else:
 					# pre check, do we have values in the line?
@@ -524,7 +517,7 @@ def parseCSV(csvFile4Import, updateParsingStatus, errorCollection, logger, delet
 						if (StringUtils.isNotEmpty(columnValue)):
 							isEmptyLine = False
 							break
-					if (isEmptyLine == True):
+					if (isEmptyLine):
 						# errorCollection.append("CSV Line: "+str(lineNumber)+" without values! <br/>")
 						# just skip this line
 						continue
@@ -534,7 +527,7 @@ def parseCSV(csvFile4Import, updateParsingStatus, errorCollection, logger, delet
 					for columnValue in row:
 						if columnIndex in columnOrderInFile:
 							csvColumn = columnOrderInFile[columnIndex]
-							if not csvColumn == None:
+							if csvColumn is not None:
 								columnValue = columnValue.strip()
 								# check if mandatory value is missing
 								if (len(columnValue) == 0):

@@ -3,6 +3,11 @@ from __future__ import absolute_import
 
 import datetime
 import re
+import sys
+from datetime import timedelta
+from string import Formatter
+
+from past.builtins import basestring, unicode
 
 # see https://www.safaribooksonline.com/library/view/python-cookbook-2nd/0596007973/ch01s19.html
 
@@ -77,9 +82,6 @@ def durationToSeconds(duration):
 		pass
 	return result
 
-
-from string import Formatter
-from datetime import timedelta
 
 # see https://stackoverflow.com/questions/538666/python-format-timedelta-to-string
 def formatTimeDelta(tdelta, fmt='{D:02}d {H:02}h {M:02}m {S:02}s', inputtype='timedelta'):
@@ -173,7 +175,7 @@ def compactTimeDeltaFormatter(tdelta, inputtype='timedelta'):
 
 # format: 12.03.2012 or 12.03.2013 14:45
 def transformToDateTimeOrNone(dateTimeString):
-	if dateTimeString != None and len(dateTimeString) != 0:
+	if dateTimeString is not None and len(dateTimeString) != 0:
 		index = dateTimeString.find(" ")
 		if (index != -1):
 			return datetime.datetime.strptime(dateTimeString, '%d.%m.%Y %H:%M')
@@ -184,38 +186,38 @@ def transformToDateTimeOrNone(dateTimeString):
 FLOAT_DEFAULT_FORMAT = "{:.02f}"
 
 def formatFloatSave(pattern, value, defaultString):
-	if (value == None or not isinstance(value, float)):
+	if (value is None or not isinstance(value, float)):
 		return defaultString
 	floatValue = float(value)
 	return pattern.format(floatValue)
 
 def isEmpty(value):
 	value = to_native_str(value)
-	if (value == None or len(str(value).strip())==0 ):
+	if (value is None or len(str(value).strip())==0 ):
 		return True
 	return False
 
 def isNotEmpty(value):
-	return isEmpty(value) == False
+	return not isEmpty(value)
 
 
 def transformToFloatOrNone(floatValue):
-	if (floatValue != None):
+	if (floatValue is not None):
 		if (isNotEmpty(floatValue)):
 			try:
 				floatValue = float(floatValue)
-			except Exception as e:
+			except Exception:
 				floatValue = None
 		else:
 			floatValue = None
 	return floatValue
 
 def transformToFloatOrZero(floatValue):
-	if (floatValue != None):
+	if (floatValue is not None):
 		if (isNotEmpty(floatValue)):
 			try:
 				floatValue = float(floatValue)
-			except Exception as e:
+			except Exception:
 				floatValue = 0.0
 		else:
 			floatValue = 0.0
@@ -225,11 +227,11 @@ def transformToFloatOrZero(floatValue):
 
 
 def transformToIntOrNone(intValue):
-	if (intValue != None):
+	if (intValue is not None):
 		if (isNotEmpty(intValue)):
 			try:
 				intValue = int(intValue)
-			except Exception as e:
+			except Exception:
 				intValue = None
 		else:
 			intValue = None
@@ -260,10 +262,6 @@ def get_formatted_size(num):
 	return "%3.1f%s" % (num, "TB")
 
 #################### START: copied from octorprint 1.4.x for 1.3.x compatible reason
-
-import sys
-from past.builtins import basestring, unicode
-
 
 def to_bytes(s_or_u, encoding="utf-8", errors="strict"):
 	# type: (Union[unicode, bytes], str, str) -> bytes

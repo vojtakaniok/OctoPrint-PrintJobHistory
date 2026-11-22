@@ -4,20 +4,16 @@ from __future__ import absolute_import
 import logging.handlers
 import threading
 import time
-from queue import Queue
 
 import octoprint.plugin
 from octoprint.events import Events
+from octoprint.util.version import is_octoprint_compatible
 
 import datetime
 import math
 import flask
 import os
-import shutil
-import tempfile
-import json
 
-from octoprint_PrintJobHistory.common import CSVExportImporter
 from octoprint_PrintJobHistory.models.FilamentModel import FilamentModel
 from octoprint_PrintJobHistory.models.PrintJobModel import PrintJobModel
 from octoprint_PrintJobHistory.models.TemperatureModel import TemperatureModel
@@ -94,7 +90,7 @@ class PrintJobHistoryPlugin(
 
 	def myInfoLogger(self, message):
 		"Automatically log the current function details."
-		import inspect, logging
+		import inspect
 		# Get the previous frame in the stack, otherwise it would
 		# be this function!!!
 		func = inspect.currentframe().f_back.f_code
@@ -126,19 +122,11 @@ class PrintJobHistoryPlugin(
 									message=message))
 
 	def _sendReloadTableToClient(self, shouldSend=True):
-		if (shouldSend == True):
+		if (shouldSend):
 			payload = {
 				"action": "reloadTableItems"
 			}
 			self._sendDataToClient(payload)
-
-	def _sendMessageConfirmToClient(self, title, message):
-		confirmMessageData = {
-			"title": title,
-			"message": message
-		}
-		self._sendDataToClient(dict(action="showMessageConfirmDialog",
-									confirmMessageData=confirmMessageData))
 
 	def _checkAndLoadThirdPartyPluginInfos(self, sendToClient=False):
 		pluginInfo = self._getPluginInformation(SettingsKeys.PLUGIN_PREHEAT)
@@ -194,8 +182,6 @@ class PrintJobHistoryPlugin(
 			self._printHistoryPluginImplementation = pluginInfo[1]
 		else:
 			self._printHistoryPluginImplementation = None
-		printHistoryCurrentVersion = pluginInfo[2]
-		printHistoryRequiredVersion = pluginInfo[3]
 
 		self._logger.info("Plugin-State:\n"
 						  "| PreHeat=" + self._preHeatPluginImplementationState + " (" + str(preHeatCurrentVersion) + ")\n"
@@ -208,7 +194,7 @@ class PrintJobHistoryPlugin(
 						  "| costestimation=" + self._costEstimationPluginImplementationState + " (" + str(costPluginCurrentVersion) + ")\n"
 						  )
 
-		if sendToClient == True:
+		if sendToClient:
 
 			currentPluginVersion = self._plugin_info.version
 			lastVersionCheck = self._settings.get([SettingsKeys.SETTINGS_KEY_LAST_PLUGIN_DEPENDENCY_CHECK])
@@ -220,29 +206,29 @@ class PrintJobHistoryPlugin(
 			self._settings.set([SettingsKeys.SETTINGS_KEY_LAST_PLUGIN_DEPENDENCY_CHECK], lastVersionCheck)
 			self._settings.save()
 
-			if (self._settings.get_boolean([SettingsKeys.SETTINGS_KEY_PLUGIN_DEPENDENCY_CHECK]) == True or newPlugiVersionNotifier):
+			if (self._settings.get_boolean([SettingsKeys.SETTINGS_KEY_PLUGIN_DEPENDENCY_CHECK]) or newPlugiVersionNotifier):
 
 				missingMessage = ""
 
-				if self._preHeatPluginImplementation == None:
+				if self._preHeatPluginImplementation is None:
 					missingMessage = missingMessage + "<li><a target='_newTab' href='https://plugins.octoprint.org/plugins/preheat/'>PreHeat Button (" + str(preHeatRequiredVersion) + "+)</a> (<b>" + self._preHeatPluginImplementationState + "</b>)</li>"
 
 				# if at least one filemant tracker is installed, then don't inform the user about the missing other plugin
-				if (self._spoolManagerPluginImplementation == None and self._filamentManagerPluginImplementation == None and self._spoolmanPluginImplementation == None):
+				if (self._spoolManagerPluginImplementation is None and self._filamentManagerPluginImplementation is None and self._spoolmanPluginImplementation is None):
 					missingMessage = missingMessage + "<li><a target='_newTab' href='https://plugins.octoprint.org/plugins/SpoolManager/'>SpoolManager (" + str(spoolManagerRequiredVersion) + "+)</a> (<b>" + self._spoolManagerPluginImplementationState + "</b>)<br/><b>or</b></li>"
 					missingMessage = missingMessage + "<li><a target='_newTab' href='https://plugins.octoprint.org/plugins/Spoolman/'>Spoolman (" + str(spoolmanRequiredVersion) + "+)</a> (<b>" + self._spoolmanPluginImplementationState + "</b>)<br/><b>or</b></li>"
 					missingMessage = missingMessage + "<li><a target='_newTab' href='https://plugins.octoprint.org/plugins/filamentmanager/'>FilamentManager (" + str(filamentManagerRequiredVersion) + "+)</a> (<b>" + self._filamentManagerPluginImplementationState + "</b>)</li>"
 
-				if self._displayLayerProgressPluginImplementation == None:
+				if self._displayLayerProgressPluginImplementation is None:
 					missingMessage = missingMessage + "<li><a target='_newTab' href='https://plugins.octoprint.org/plugins/DisplayLayerProgress/'>DisplayLayerProgress (" + str(displayLayerRequiredVersion) + "+)</a> (<b>" + self._displayLayerProgressPluginImplementationState + "</b>)</li>"
 
-				if self._ultimakerFormatPluginImplementation == None:
+				if self._ultimakerFormatPluginImplementation is None and is_octoprint_compatible("<2.0.0"):
 					missingMessage = missingMessage + "<li><a target='_newTab' href='https://plugins.octoprint.org/plugins/UltimakerFormatPackage/'>Cura Thumbnails (" + str(ultimakerRequiredVersion) + "+)</a> (<b>" + self._ultimakerFormatPluginImplementationState + "</b>)</li>"
 
-				if self._prusaSlicerThumbnailsPluginImplementation == None:
+				if self._prusaSlicerThumbnailsPluginImplementation is None and is_octoprint_compatible("<2.0.0"):
 					missingMessage = missingMessage + "<li><a target='_newTab' href='https://plugins.octoprint.org/plugins/prusaslicerthumbnails/'>PrusaSlicer Thumbnails (" + str(pruseSlicerRequiredVersion) + "+)</a> (<b>" + self._prusaSlicerThumbnailsPluginImplementationState + "</b>)</li>"
 
-				if self._costEstimationPluginImplementation == None:
+				if self._costEstimationPluginImplementation is None:
 					missingMessage = missingMessage + "<li><a target='_newTab' href='https://plugins.octoprint.org/plugins/costestimation/'>CostEstimation (" + str(costPluginRequiredVersion) +"+)</a> (<b>" + self._costEstimationPluginImplementationState + "</b>)</li>"
 					# missingMessage = missingMessage + "<li><a target='_newTab' href='https://plugins.octoprint.org/plugins/costestimation/'>CostEstimation</a> (<b>Wrong Version, expected: 3.4.0+ current: " + currentVersion + "</b>)</li>"
 
@@ -265,27 +251,27 @@ class PrintJobHistoryPlugin(
 			self._settings.save()
 
 		if ( (currentFilamentTrackingPlugin == SettingsKeys.KEY_SELECTED_SPOOLMANAGER_PLUGIN) and
-			 (self._isSpoolManagerInstalledAndEnabled() == False) ):
+			 (not self._isSpoolManagerInstalledAndEnabled()) ):
 			self._settings.set([SettingsKeys.SETTINGS_KEY_SELECTED_FILAMENTTRACKER_PLUGIN],
 							   SettingsKeys.KEY_SELECTED_NONE_PLUGIN)
 			self._settings.save()
 
 		if ( (currentFilamentTrackingPlugin == SettingsKeys.KEY_SELECTED_SPOOLMAN_PLUGIN) and
-			(self._isSpoolmanInstalledAndEnabled() == False) ):
+			(not self._isSpoolmanInstalledAndEnabled()) ):
 			self._settings.set([SettingsKeys.SETTINGS_KEY_SELECTED_FILAMENTTRACKER_PLUGIN],
 							   SettingsKeys.KEY_SELECTED_NONE_PLUGIN)
 			self._settings.save()
 
 		if ( (currentFilamentTrackingPlugin == SettingsKeys.KEY_SELECTED_FILAMENTMANAGER_PLUGIN) and
-			 (self._isFilamentManagerInstalledAndEnabled() == False) ):
+			 (not self._isFilamentManagerInstalledAndEnabled()) ):
 			self._settings.set([SettingsKeys.SETTINGS_KEY_SELECTED_FILAMENTTRACKER_PLUGIN], SettingsKeys.KEY_SELECTED_NONE_PLUGIN)
 			self._settings.save()
 
-		notifyUser = self._settings.get_boolean([SettingsKeys.SETTINGS_KEY_NO_NOTIFICATION_FILAMENTTRACKERING_PLUGIN_SELECTION]) == False
-		if ( (self._isSpoolManagerInstalledAndEnabled() == True or self._isSpoolmanInstalledAndEnabled() == True or self._isFilamentManagerInstalledAndEnabled() == True) and
+		notifyUser = not self._settings.get_boolean([SettingsKeys.SETTINGS_KEY_NO_NOTIFICATION_FILAMENTTRACKERING_PLUGIN_SELECTION])
+		if ( (self._isSpoolManagerInstalledAndEnabled() or self._isSpoolmanInstalledAndEnabled() or self._isFilamentManagerInstalledAndEnabled()) and
 			 (self._settings.get([SettingsKeys.SETTINGS_KEY_SELECTED_FILAMENTTRACKER_PLUGIN]) == SettingsKeys.KEY_SELECTED_NONE_PLUGIN) ):
 				# Plugins installed, but currently 'none' is selected
-				self._logger.warning("Filamentracking is disabled, but some plugins are installed!");
+				self._logger.warning("Filamentracking is disabled, but some plugins are installed!")
 				if (notifyUser):
 					self._sendMessageToClient("notice", "Filamenttracking is possible!", "Select an tracking plugin in settings", True)
 		else:
@@ -295,19 +281,19 @@ class PrintJobHistoryPlugin(
 											  "No tracking plugin is installed/enabled", True)
 
 	def _isSpoolManagerInstalledAndEnabled(self):
-		return True if self._spoolManagerPluginImplementation != None and self._spoolManagerPluginImplementationState == "enabled" else False
+		return True if self._spoolManagerPluginImplementation is not None and self._spoolManagerPluginImplementationState == "enabled" else False
 
 	def _isSpoolmanInstalledAndEnabled(self):
-		return True if self._spoolmanPluginImplementation != None and self._spoolmanPluginImplementationState == "enabled" else False
+		return True if self._spoolmanPluginImplementation is not None and self._spoolmanPluginImplementationState == "enabled" else False
 
 	def _isFilamentManagerInstalledAndEnabled(self):
-		return True if self._filamentManagerPluginImplementation != None and self._filamentManagerPluginImplementationState == "enabled" else False
+		return True if self._filamentManagerPluginImplementation is not None and self._filamentManagerPluginImplementationState == "enabled" else False
 
 	def _isCostEstimationInstalledAndEnabled(self):
-		return True if self._costEstimationPluginImplementation != None and self._costEstimationPluginImplementationState == "enabled" else False
+		return True if self._costEstimationPluginImplementation is not None and self._costEstimationPluginImplementationState == "enabled" else False
 
 	def _isPreHeatInstalledAndEnabled(self):
-		return True if self._preHeatPluginImplementation != None and self._preHeatPluginImplementationState == "enabled" else False
+		return True if self._preHeatPluginImplementation is not None and self._preHeatPluginImplementationState == "enabled" else False
 
 
 
@@ -326,12 +312,12 @@ class PrintJobHistoryPlugin(
 
 		if pluginKey in self._plugin_manager.plugins:
 			plugin = self._plugin_manager.plugins[pluginKey]
-			if plugin != None:
-				if (plugin.enabled == True):
+			if plugin is not None:
+				if (plugin.enabled):
 					status = "enabled"
 					# for OP 1.4.x we need to check agains "icompatible"-attribute
 					if (hasattr(plugin, 'incompatible')):
-						if (plugin.incompatible == False):
+						if (not plugin.incompatible):
 							implementation = plugin.implementation
 						else:
 							status = "incompatible"
@@ -346,16 +332,16 @@ class PrintJobHistoryPlugin(
 			status = "missing"
 
 		# Check requiredVersion, if not compatible --> implementation None
-		if (requiredVersion != None and version != None):
+		if (requiredVersion is not None and version is not None):
 			canBeUsed = False
 			try:
 				comparabelVersion = self._get_comparable_version_semantic(version)
 				comparabelRequiredVersion = self._get_comparable_version_semantic(requiredVersion)
 				canBeUsed = comparabelVersion >= comparabelRequiredVersion
-			except (ValueError) as error:
+			except (ValueError):
 				logging.exception("Something is wrong with the " +pluginKey+ " version numbers")
 
-			if (canBeUsed == False):
+			if (not canBeUsed):
 				status = "wrong version"
 				implementation = None
 		return [status, implementation, version, requiredVersion]
@@ -396,7 +382,7 @@ class PrintJobHistoryPlugin(
 		allMaterials = ""
 
 		# - assign calculated values
-		if (filamentCalculatedDict != None):
+		if (filamentCalculatedDict is not None):
 
 			for toolId in filamentCalculatedDict:
 				filamentModel = FilamentModel()
@@ -411,7 +397,7 @@ class PrintJobHistoryPlugin(
 
 				# Assign SpoolData (e.g. Name) for the calculated tools (only for calc-lenght > 0)
 				# get spool data, if available
-				if (calculatedLength > 0 and selectedSpoolDataDict != None and toolId in selectedSpoolDataDict):
+				if (calculatedLength > 0 and selectedSpoolDataDict is not None and toolId in selectedSpoolDataDict):
 					spoolData = selectedSpoolDataDict[toolId]
 
 					filamentModel.spoolName = spoolData["spoolName"]
@@ -423,17 +409,17 @@ class PrintJobHistoryPlugin(
 					filamentModel.spoolCost = spoolData["spoolCost"]
 					filamentModel.weight = spoolData["weight"]
 
-					if (filamentModel.spoolName != None and (filamentModel.spoolName in allSpoolNames) == False):
+					if (filamentModel.spoolName is not None and filamentModel.spoolName not in allSpoolNames):
 						if (allSpoolNames != ""):
 							allSpoolNames = allSpoolNames + ", "
 						allSpoolNames = allSpoolNames + filamentModel.spoolName
 
-					if (filamentModel.vendor != None and (filamentModel.vendor in allVendors) == False):
+					if (filamentModel.vendor is not None and filamentModel.vendor not in allVendors):
 						if (allVendors != ""):
 							allVendors = allVendors + ", "
 						allVendors = allVendors + filamentModel.vendor
 
-					if (filamentModel.material != None and (filamentModel.material in allMaterials) == False):
+					if (filamentModel.material is not None and filamentModel.material not in allMaterials):
 						if (allMaterials != ""):
 							allMaterials = allMaterials + ", "
 						allMaterials = allMaterials + filamentModel.material
@@ -445,7 +431,7 @@ class PrintJobHistoryPlugin(
 		totalFilamentModel.material = allMaterials
 
 		# - assign measured values
-		if (filamentExtrusionArray != None):
+		if (filamentExtrusionArray is not None):
 			usedTotalLength = 0.0
 			usedTotaWeight = 0.0
 			usedTotalCost = 0.0
@@ -453,7 +439,7 @@ class PrintJobHistoryPlugin(
 			for usedLength in filamentExtrusionArray:
 				toolId = "tool" + str(toolIndex)
 				filamentModel = printJob.getFilamentModelByToolId(toolId)
-				if (filamentModel == None):
+				if (filamentModel is None):
 					filamentModel = FilamentModel()
 					filamentModel.toolId = toolId
 					printJob.addFilamentModel(filamentModel)
@@ -467,9 +453,9 @@ class PrintJobHistoryPlugin(
 																				  filamentModel.density)
 				usedTotaWeight = usedTotaWeight + filamentModel.usedWeight
 
-				if (filamentModel.spoolCost != None and
-					filamentModel.weight != None and
-					filamentModel.usedWeight != None):
+				if (filamentModel.spoolCost is not None and
+					filamentModel.weight is not None and
+					filamentModel.usedWeight is not None):
 					filamentModel.usedCost = (filamentModel.spoolCost / filamentModel.weight) * filamentModel.usedWeight
 					usedTotalCost = usedTotalCost + filamentModel.usedCost
 
@@ -478,7 +464,7 @@ class PrintJobHistoryPlugin(
 				toolIndex = toolIndex + 1
 			# - add total values
 			filamentModel = printJob.getFilamentModelByToolId("total")
-			if (filamentModel == None):
+			if (filamentModel is None):
 				filamentModel = FilamentModel()
 				filamentModel.toolId = "total"
 				printJob.addFilamentModel(filamentModel)
@@ -502,7 +488,7 @@ class PrintJobHistoryPlugin(
 				result = self._spoolManagerPluginImplementation.api_getExtrusionAmount()
 			except:
 				self._logger.warning("You don't use the latest SpoolManager Version 1.4+")
-			if (result == None):
+			if (result is None):
 				# try the old way
 				result = self._spoolManagerPluginImplementation.myFilamentOdometer.getExtrusionAmount()
 			pass
@@ -535,7 +521,7 @@ class PrintJobHistoryPlugin(
 		if "analysis" in fileData:
 			if "filament" in fileData["analysis"]:
 				filamentAnalyseDict = fileData["analysis"]["filament"]
-		if (filamentAnalyseDict == None):
+		if (filamentAnalyseDict is None):
 			self._logger.info("There is no calculated filament data in meta-file")
 		return filamentAnalyseDict
 
@@ -552,10 +538,10 @@ class PrintJobHistoryPlugin(
 			self._logger.info("Try reading filament from SpoolManager...")
 			# get data from SPOOLMANAGER
 			selectedSpoolInformations = self._spoolManagerPluginImplementation.api_getSelectedSpoolInformations()
-			if (selectedSpoolInformations != None):
+			if (selectedSpoolInformations is not None):
 				result = {}
 				for spoolData in selectedSpoolInformations:
-					if (spoolData != None):
+					if (spoolData is not None):
 						toolId = "tool" + str(spoolData["toolIndex"])
 						databaseId = spoolData["databaseId"]
 						spoolName = spoolData["spoolName"]
@@ -601,7 +587,7 @@ class PrintJobHistoryPlugin(
 
 			result = {}
 			for toolId, spoolData in spools.items():
-				if (spoolData != None):
+				if (spoolData is not None):
 					toolId = "tool" + toolId
 					spoolName = spoolData["filament"]["name"]
 					weight = spoolData["filament"]["weight"]
@@ -628,7 +614,7 @@ class PrintJobHistoryPlugin(
 			self._logger.info("Try reading filament from FilamentManager...")
 			# myFilamentOdometer, since FilamentManager V1.7.2
 			selectedSpools = self._filamentManagerPluginImplementation.filamentManager.get_all_selections(self._filamentManagerPluginImplementation.client_id)
-			if selectedSpools != None and len(selectedSpools) > 0:
+			if selectedSpools is not None and len(selectedSpools) > 0:
 				result = {}
 				for currentSpoolData in selectedSpools:
 					toolId = "tool" + str(currentSpoolData["tool"])
@@ -663,7 +649,7 @@ class PrintJobHistoryPlugin(
 
 	def _calculateFilamentWeightForLength(self, usedLength, diameter, density):
 		result = 0.0
-		if (usedLength != None and diameter != None and density != None):
+		if (usedLength is not None and diameter is not None and density is not None):
 			radius = diameter / 2.0
 			volume = usedLength * math.pi * radius * radius / 1000.0
 			result = volume * density
@@ -702,15 +688,15 @@ class PrintJobHistoryPlugin(
 
 		shouldReadTemperatureFromPreHeat = self._settings.get_boolean(
 			[SettingsKeys.SETTINGS_KEY_TAKE_TEMPERATURE_FROM_PREHEAT])
-		if (shouldReadTemperatureFromPreHeat == True):
+		if (shouldReadTemperatureFromPreHeat):
 			self._logger.info("Try reading Temperature from PreHeat-Plugin...")
 
-			if (self._preHeatPluginImplementation != None):
+			if (self._preHeatPluginImplementation is not None):
 				path_on_disk = octoprint.server.fileManager.path_on_disk(self._currentPrintJobModel.fileOrigin,
 																		 self._currentPrintJobModel.filePathName)
 
 				preHeatTemperature = self._preHeatPluginImplementation.read_temperatures_from_file(path_on_disk)
-				if preHeatTemperature != None:
+				if preHeatTemperature is not None:
 					if "bed" in preHeatTemperature:
 						tempBed = preHeatTemperature["bed"]
 						tempFound = True
@@ -724,7 +710,7 @@ class PrintJobHistoryPlugin(
 			else:
 				self._logger.warning("... PreHeat Button Plugin not installed/enabled")
 
-		if (tempFound == True):
+		if (tempFound):
 			self._logger.info(
 				"... Temperature found '" + str(tempBed) + "' Tool '" + toolId + "' '" + str(tempTool) + "'")
 			self._addTemperatureToPrintModel(self._currentPrintJobModel, tempBed, toolId, tempTool)
@@ -739,7 +725,7 @@ class PrintJobHistoryPlugin(
 		time.sleep(dealyInSeconds)
 
 		currentTemps = printer.get_current_temperatures()
-		if (currentTemps != None and "bed" in currentTemps and "tool0" in currentTemps):
+		if (currentTemps is not None and "bed" in currentTemps and "tool0" in currentTemps):
 			tempBed = currentTemps["bed"]["target"]
 			# Maybe an other tool should be used.
 			toolId = self._settings.get([SettingsKeys.SETTINGS_KEY_DEFAULT_TOOL_ID])  # "tool0"
@@ -767,13 +753,13 @@ class PrintJobHistoryPlugin(
 	def _addTemperatureToPrintModel(self, printJobModel, bedTemp, toolId, toolTemp):
 		tempModel = TemperatureModel()
 		tempModel.sensorName = "bed"
-		# tempModel.sensorValue = bedTemp if bedTemp != None else"-"
-		tempModel.sensorValue = bedTemp if bedTemp != None else "-"
+		# tempModel.sensorValue = bedTemp if bedTemp is not None else"-"
+		tempModel.sensorValue = bedTemp if bedTemp is not None else "-"
 		printJobModel.addTemperatureModel(tempModel)
 
 		tempModel = TemperatureModel()
 		tempModel.sensorName = toolId  # "tool0"
-		tempModel.sensorValue = toolTemp if toolTemp != None else "-"
+		tempModel.sensorValue = toolTemp if toolTemp is not None else "-"
 		printJobModel.addTemperatureModel(tempModel)
 
 
@@ -842,8 +828,6 @@ class PrintJobHistoryPlugin(
 		printTimeInHours = printTimeInSeconds / 3600
 
 		# read cost-settings froom Cost-Plugin
-		currencySymbol = self._costEstimationPluginImplementation._settings.get(["currency"]) # Euro
-		currencyFormat = self._costEstimationPluginImplementation._settings.get(["currencyFormat"]) # Euro
 
 		# calc: electricityCost
 		electricityCost = None
@@ -887,7 +871,7 @@ class PrintJobHistoryPlugin(
 		weightOfFilament = None
 		densityOfFilament = None
 		diameterOfFilament = None
-		if (allFilamentModels == None):
+		if (allFilamentModels is None):
 			#  filament default values
 			self._logger.error("No measured/needed filament present. FilamentCost calculation not possible. Maybe metadata not assigned in json file.")
 		else:
@@ -931,7 +915,7 @@ class PrintJobHistoryPlugin(
 					costOfFilament = filamentModel.spoolCost
 					weightOfFilament = filamentModel.weight
 
-					if (usedLength == None or usedLength == 0.0):
+					if (usedLength is None or usedLength == 0.0):
 						self._logger.info("No filament calculation for '"+toolId+"', because usedLength is 0")
 						continue
 
@@ -1031,7 +1015,7 @@ class PrintJobHistoryPlugin(
 		databaseId = None
 		payLoadForClient = None
 		# capture the print
-		if (captureThePrint == True):
+		if (captureThePrint):
 			self._logger.info("----- Start capturing print job data... -----")
 
 			# - Core Data
@@ -1044,9 +1028,9 @@ class PrintJobHistoryPlugin(
 			selectedFilename = payload.get("path")
 			selectedFile = self._file_manager.path_on_disk(payload.get("origin"), selectedFilename)
 			slicerSettingsExpressions = self._settings.get([SettingsKeys.SETTINGS_KEY_SLICERSETTINGS_KEYVALUE_EXPRESSION])
-			if (slicerSettingsExpressions != None and len(slicerSettingsExpressions) != 0):
+			if (slicerSettingsExpressions is not None and len(slicerSettingsExpressions) != 0):
 				slicerSettings = SlicerSettingsParser(self._logger).extractSlicerSettings(selectedFile, slicerSettingsExpressions)
-				if (slicerSettings.settingsAsText != None and len(slicerSettings.settingsAsText) != 0):
+				if (slicerSettings.settingsAsText is not None and len(slicerSettings.settingsAsText) != 0):
 					self._currentPrintJobModel.slicerSettingsAsText = slicerSettings.settingsAsText
 
 			# - Image / Thumbnail
@@ -1061,7 +1045,7 @@ class PrintJobHistoryPlugin(
 			# store everything in the database
 			self._logger.info("----- Try storing printjob model ----")
 			databaseId = self._databaseManager.insertPrintJob(self._currentPrintJobModel)
-			if (databaseId == None):
+			if (databaseId is None):
 				self._logger.error("PrintJob not captured, see previous error log!")
 				return None
 			printJobItem = None
@@ -1103,13 +1087,13 @@ class PrintJobHistoryPlugin(
 
 		# capture the technical log and send updated model to browser
 		self._resetableFileLogHandler.stopLogging()
-		if (databaseId != None):
+		if (databaseId is not None):
 			techLog = self._resetableFileLogHandler.readLogContent()
 			lastPrintJobModel = self._databaseManager.loadPrintJob(databaseId)
 			lastPrintJobModel.technicalLog = techLog
 			self._databaseManager.updatePrintJob(lastPrintJobModel)
-			if (payload != None):
-				if (payLoadForClient["printJobItem"] != None):
+			if (payload is not None):
+				if (payLoadForClient["printJobItem"] is not None):
 					printJobItem = TransformPrintJob2JSON.transformPrintJobModel(lastPrintJobModel, self._file_manager)
 					payLoadForClient["printJobItem"] = printJobItem
 				self._sendDataToClient(payLoadForClient)
@@ -1128,30 +1112,28 @@ class PrintJobHistoryPlugin(
 		takeThumbnailAfterPrint = self._settings.get_boolean(
 			[SettingsKeys.SETTINGS_KEY_TAKE_PLUGIN_THUMBNAIL_AFTER_PRINT])
 
-		preferedSnapshot = self._settings.get(
-			[SettingsKeys.SETTINGS_KEY_PREFERED_IMAGE_SOURCE]) == SettingsKeys.KEY_PREFERED_IMAGE_SOURCE_CAMERA
 		preferedThumbnail = self._settings.get(
 			[SettingsKeys.SETTINGS_KEY_PREFERED_IMAGE_SOURCE]) == SettingsKeys.KEY_PREFERED_IMAGE_SOURCE_THUMBNAIL
 
 		isThumbnailPresent = self._isThumbnailPresent(payload)
 
 		# - No Image
-		if (takeSnapshotAfterPrint == False and takeSnapshotOnGCode == False and takeSnapshotOnM118Code == False and takeThumbnailAfterPrint == False):
+		if (not takeSnapshotAfterPrint and not takeSnapshotOnGCode and not takeSnapshotOnM118Code and not takeThumbnailAfterPrint):
 			self._logger.info("No image should be taken")
 			return
 		# - Only Thumbnail
-		if (takeThumbnailAfterPrint == True and takeSnapshotAfterPrint == False and takeSnapshotOnGCode == False and takeSnapshotOnM118Code == False):
+		if (takeThumbnailAfterPrint and not takeSnapshotAfterPrint and not takeSnapshotOnGCode and not takeSnapshotOnM118Code):
 			# Try to take the thumbnail
 			self._logger.info("Try to take thumbnail, because afterprint/gcode not selected")
 			self._takeThumbnailImage(payload)
 			return
-		if (takeThumbnailAfterPrint == True and isThumbnailPresent == True and preferedThumbnail == True):
+		if (takeThumbnailAfterPrint and isThumbnailPresent and preferedThumbnail):
 			self._logger.info("Try to take thumbnail, because thumbnail is present and prefered")
 			self._takeThumbnailImage(payload)
 			return
 		# - Only Camera
-		if ((takeSnapshotAfterPrint == True) and takeThumbnailAfterPrint == False):
-			if (isCameraPresent == False):
+		if (takeSnapshotAfterPrint and not takeThumbnailAfterPrint):
+			if (not isCameraPresent):
 				self._logger.info("Camera Snapshot is selected but no camera url is available")
 				return
 			self._logger.info("Try capturing snapshot asyc from camera, because thumbnail not selected")
@@ -1163,7 +1145,7 @@ class PrintJobHistoryPlugin(
 
 			return
 		# - Camera
-		if (isCameraPresent == True and takeSnapshotAfterPrint == True):
+		if (isCameraPresent and takeSnapshotAfterPrint):
 			self._logger.info("Try capturing snapshot asyc")
 			self._cameraManager.takeSnapshotAsync(
 				CameraManager.buildSnapshotFilename(self._currentPrintJobModel.printStartDateTime),
@@ -1181,7 +1163,15 @@ class PrintJobHistoryPlugin(
 		thumbnailPresent = False
 		metadata = self._file_manager.get_metadata(payload["origin"], payload["path"])
 		# check if available
-		if ("thumbnail" in metadata):
+		if (hasattr(self._file_manager, "has_thumbnail") and self._file_manager.has_thumbnail(payload["origin"], payload["path"])):
+			# Thumbnail provided by OctoPrint itself (2.x only)
+			thumbnailPresent = True
+			if (storeImage):
+				thumbnail = self._file_manager.read_thumbnail(payload["origin"], payload["path"])[1]
+				self._cameraManager.takeOctoPrintThumbnail(CameraManager.buildSnapshotFilename(self._currentPrintJobModel.printStartDateTime), thumbnail)
+				thumbnail.close()
+		elif ("thumbnail" in metadata):
+			# Thumbnail provided by another plugin
 			thumbnailPresent = self._cameraManager.takePluginThumbnail(
 				CameraManager.buildSnapshotFilename(self._currentPrintJobModel.printStartDateTime),
 				metadata["thumbnail"],
@@ -1190,7 +1180,7 @@ class PrintJobHistoryPlugin(
 		else:
 			self._logger.warning("Thumbnail not found in print metadata")
 
-		if (thumbnailPresent == False):
+		if (not thumbnailPresent):
 			self._logger.warning("Thumbnail not found for cameraManager")
 		else:
 			self._logger.info("Thumbnail was captured from metadata")
@@ -1199,9 +1189,6 @@ class PrintJobHistoryPlugin(
 
 
 	#######################################################################################   OP - HOOKs
-	from queue import Queue
-	# from logging.handlers import QueueHandler
-	# from logging.handlers import QueueListener
 
 	def on_after_startup(self):
 		# check if needed plugins were available
@@ -1212,15 +1199,6 @@ class PrintJobHistoryPlugin(
 		# 	get_webcam_profiles = helpers["get_webcam_profiles"]
 		#
 		# 	self.camProfiles = get_webcam_profiles()
-
-		# que = Queue(10)
-		# queue_handler = MyQueueHandler(que)
-		#
-		# root = logging.getLogger()
-		# root.addHandler(queue_handler)
-		# self._technicalLoggingHandler = MyHandler()
-		# listener = logging.handlers.QueueListener(que, self._technicalLoggingHandler)
-		# listener.start()
 
 		logFilename = os.path.join(self._settings.getBaseFolder("logs"), "plugin_PrintJobHistory_singlePrintJob.log")
 		formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
@@ -1242,7 +1220,7 @@ class PrintJobHistoryPlugin(
 		# take snapshot an gcode command
 		if (self._settings.get_boolean([SettingsKeys.SETTINGS_KEY_TAKE_SNAPSHOT_ON_GCODE_COMMAND])):
 			gcodePattern = self._settings.get([SettingsKeys.SETTINGS_KEY_TAKE_SNAPSHOT_GCODE_COMMAND_PATTERN])
-			if (gcodePattern != None and len(gcodePattern.strip()) != 0):
+			if (gcodePattern is not None and len(gcodePattern.strip()) != 0):
 				commandAsString = StringUtils.to_native_str(cmd)
 				if (commandAsString.startswith(gcodePattern)):
 					self._logger.info("M117 message for taking snapshot detected. Try to capture image!")
@@ -1262,9 +1240,9 @@ class PrintJobHistoryPlugin(
 			if (self._settings.get_boolean(
 				[SettingsKeys.SETTINGS_KEY_TAKE_SNAPSHOT_ON_M118_COMMAND])):
 				self._logger.info("M118 command enabled for taking snapshot. Try to capture image!")
-				if (self._currentPrintJobModel != None and self._currentPrintJobModel.printStartDateTime != None):
+				if (self._currentPrintJobModel is not None and self._currentPrintJobModel.printStartDateTime is not None):
 
-					if (self._cameraManager.isCamaraSnahotURLPresent() == True):
+					if (self._cameraManager.isCamaraSnahotURLPresent()):
 						# Try to take the snapshot
 						self._cameraManager.takeSnapshotAsync(
 							CameraManager.buildSnapshotFilename(self._currentPrintJobModel.printStartDateTime),
@@ -1316,7 +1294,7 @@ class PrintJobHistoryPlugin(
 
 			# Send plugin storage information
 			# - Storage
-			if (hasattr(self, "_databaseManager") == True):
+			if (hasattr(self, "_databaseManager")):
 				databaseFileLocation = self._databaseManager.getDatabaseFileLocation()
 				snapshotFileLocation = self._cameraManager.getSnapshotFileLocation()
 				# Eval currencySymbol
@@ -1328,7 +1306,7 @@ class PrintJobHistoryPlugin(
 				self._sendDataToClient(dict(action="initalData",
 											databaseFileLocation=databaseFileLocation,
 											snapshotFileLocation=snapshotFileLocation,
-											isPrintHistoryPluginAvailable=self._printHistoryPluginImplementation != None,
+											isPrintHistoryPluginAvailable=self._printHistoryPluginImplementation is not None,
 											isSpoolManagerInstalled = self._isSpoolManagerInstalledAndEnabled(),
 											isSpoolmanInstalled = self._isSpoolmanInstalledAndEnabled(),
 											isFilamentManagerInstalled = self._isFilamentManagerInstalledAndEnabled(),
@@ -1341,7 +1319,7 @@ class PrintJobHistoryPlugin(
 			# - Show last Print-Dialog
 			if self._settings.get_boolean([SettingsKeys.SETTINGS_KEY_SHOW_PRINTJOB_DIALOG_AFTER_PRINT]):
 				printJobId = self._settings.get_int([SettingsKeys.SETTINGS_KEY_SHOW_PRINTJOB_DIALOG_AFTER_PRINT_JOB_ID])
-				if (not printJobId == None):
+				if (printJobId is not None):
 					try:
 						printJobModel = self._databaseManager.loadPrintJob(printJobId)
 
@@ -1366,12 +1344,8 @@ class PrintJobHistoryPlugin(
 							"printJobItem": printJobItem
 						}
 						self._sendDataToClient(payload)
-					except DoesNotExist as e:
+					except DoesNotExist:
 						self._settings.remove([SettingsKeys.SETTINGS_KEY_SHOW_PRINTJOB_DIALOG_AFTER_PRINT_JOB_ID])
-
-			messageConfirmData = self._settings.get([SettingsKeys.SETTINGS_KEY_MESSAGE_CONFIRM_DATA])
-			if (messageConfirmData != None):
-				self._sendMessageConfirmToClient(messageConfirmData.title, messageConfirmData.message)
 
 			self._checkForMissingFilamentTracking()
 
@@ -1384,7 +1358,7 @@ class PrintJobHistoryPlugin(
 		elif Events.PRINT_DONE == event:
 			self._printJobFinished("success", payload)
 		elif Events.PRINT_FAILED == event:
-			if self.alreadyCanceled == False:
+			if not self.alreadyCanceled:
 				self._printJobFinished("failed", payload)
 		elif Events.PRINT_CANCELLED == event:
 			self.alreadyCanceled = True
@@ -1401,6 +1375,9 @@ class PrintJobHistoryPlugin(
 		self._databaseManager.showSQLLogging(sqlLoggingEnabled)
 
 
+	##~~ SimpleApiPlugin mixin
+	def is_api_protected(self):
+		return True
 
 	# to allow the frontend to trigger an GET call
 	def on_api_get(self, request):
@@ -1471,7 +1448,6 @@ class PrintJobHistoryPlugin(
 		settings[SettingsKeys.SETTINGS_KEY_SQL_LOGGING_ENABLED] = False
 
 		## Other stuff
-		settings[SettingsKeys.SETTINGS_KEY_MESSAGE_CONFIRM_DATA] = None
 		settings[SettingsKeys.SETTINGS_KEY_LAST_PLUGIN_DEPENDENCY_CHECK] = None
 
 
@@ -1493,6 +1469,9 @@ class PrintJobHistoryPlugin(
 			dict(type="settings", custom_bindings=True, name="Print Job History")
 		]
 
+	def is_template_autoescaped(self):
+		return True
+
 
 	##~~ AssetPlugin mixin
 	def get_assets(self):
@@ -1504,7 +1483,6 @@ class PrintJobHistoryPlugin(
 				"js/PrintJobHistory.js",
 				"js/PrintJobHistory-APIClient.js",
 				"js/PrintJobHistory-PluginCheckDialog.js",
-				"js/PrintJobHistory-MessageConfirmDialog.js",
 				"js/PrintJobHistory-EditJobDialog.js",
 				"js/PrintJobHistory-ImportDialog.js",
 				"js/PrintJobHistory-StatisticDialog.js",
@@ -1616,64 +1594,3 @@ def __plugin_load__():
 # 	length = filamentAnalyseDict[toolId]["length"]
 # 	volumne = filamentAnalyseDict[toolId]["volume"]
 # 	print(toolId + " " + str(length))
-
-class MyHandler:
-	"""
-	A simple handler for logging events. It runs in the listener process and
-	dispatches events to loggers based on the name in the received record,
-	which then get dispatched, by the logging system, to the handlers
-	configured for those loggers.
-	"""
-	def __init__(self):
-		self.technicalLog = ""
-
-	def resetTechnicalLog(self):
-		self.technicalLog = ""
-
-	def getTechnicalLog(self):
-		return self.technicalLog
-
-	def handle(self, record):
-		# if record.name == "root":
-		#     logger = logging.getLogger()
-		# else:
-		#     logger = logging.getLogger(record.name)
-		#
-		# if logger.isEnabledFor(record.levelno):
-		#     # The process name is transformed just to show that it's the listener
-		#     # doing the logging to files and console
-		#     record.processName = '%s (for %s)' % (current_process().name, record.processName)
-		#     logger.handle(record)
-
-		# BOOOOMMM "AttributeError: 'LogRecord' object has no attribute 'asctime'"
-		# print("AAAAA****************************")
-		#print(record)
-		# asctime = record.asctime #2022-01-22 14:50:09,729
-		name = record.name #octoprint.plugins.SpoolManager
-		module = record.module # SpoolManagerAPI
-		levelname = record.levelname # DEBUG
-		message = record.message # API Load all spool
-
-		if (name.startswith("octoprint.plugins.PrintJobHistory")):
-			self.technicalLog = self.technicalLog + message + "\n"
-
-		# print("EEEEE****************************")
-		pass
-
-class MyQueueHandler(logging.handlers.QueueHandler):
-
-	def enqueue(self, record):
-		"""
-		Enqueue a record.
-
-		The base implementation uses put_nowait. You may want to override
-		this method if you want to use blocking, timeouts or custom queue
-		implementations.
-		"""
-		# print("*** Current len: " + str (self.queue.qsize()))
-		if (self.queue.full()):
-			print("Something wrong with the listener, because loggging queue is full. No new log-record is added.")
-		else:
-			self.queue.put_nowait(record)
-
-

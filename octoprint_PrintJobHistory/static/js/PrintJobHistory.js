@@ -375,14 +375,12 @@ $(function() {
         self.pluginCheckDialog = new PrintJobHistoryPluginCheckDialog();
         self.statisticDialog = new StatisticDialog();
         self.compareSlicerSettingsDialog = new CompareSlicerSettingsDialog();
-        self.messageConfirmDialog = new PrintJobHistoryPluginMessageConfirmDialog();
 
         self.printJobForEditing = ko.observable();
         self.printJobForEditing(new PrintJobItem(printHistoryJobItems[0]));
 
         self.printJobToShowAfterStartup = null;
         self.missingPluginDialogMessage = null;
-        self.confirmMessageDialogData = null;
 
         //self.tableAttributeVisibility = ko.observable();
         self.tableAttributeVisibility = new TableAttributeVisibility();
@@ -396,11 +394,13 @@ $(function() {
         self.isFilamentManagerInstalled = ko.observable(false);
 
         self.isPreHeatPluginAvailableText = ko.observable("unknown");
+        self.isPreHeatPluginAvailableColor = ko.observable("");
 
         self.databaseFileLocation = ko.observable();
         self.snapshotFileLocation = ko.observable();
 
         self.isCostEstimationPluginAvailableText = ko.observable("unknown");
+        self.isCostEstimationPluginAvailableColor = ko.observable("");
         self.currencySymbol = ko.observable();
         self.currencyFormat = ko.observable();
 
@@ -507,7 +507,6 @@ $(function() {
             dataType: "json",
             maxNumberOfFiles: 1,
             autoUpload: false,
-            headers: OctoPrint.getRequestHeaders(),
             add: function(e, data) {
                 if (data.files.length === 0) {
                     // no files? ignore
@@ -582,7 +581,6 @@ $(function() {
             dataType: "json",
             maxNumberOfFiles: 1,
             autoUpload: false,
-            headers: OctoPrint.getRequestHeaders(),
             add: function(e, data) {
                 if (data.files.length === 0) {
                     // no files? ignore
@@ -611,7 +609,6 @@ $(function() {
             dataType: "json",
             maxNumberOfFiles: 1,
             autoUpload: false,
-            headers: OctoPrint.getRequestHeaders(),
             add: function(e, data) {
                 if (data.files.length === 0) {
                     // no files? ignore
@@ -686,7 +683,6 @@ $(function() {
             self.pluginSettings = self.settingsViewModel.settings.plugins[PLUGIN_ID];
             self.printJobEditDialog.init(self.apiClient, self.settingsViewModel.settings.webcam);
             self.pluginCheckDialog.init(self.apiClient, self.pluginSettings);
-            self.messageConfirmDialog.init(self.apiClient, self.pluginSettings);
             self.csvImportDialog.init(self.apiClient);
             self.statisticDialog.init(self.apiClient);
             self.compareSlicerSettingsDialog.init(self.apiClient, self.busyIndicatorActive);
@@ -723,10 +719,6 @@ $(function() {
                 self.pluginCheckDialog.showMissingPluginsDialog(self.missingPluginDialogMessage);
                 self.missingPluginDialogMessage = null;
             }
-            if (self.confirmMessageDialogData != null){
-                self.confirmMessageDialog.showDialog(self.confirmMessageDialogData);
-                self.confirmMessageDialogData = null;
-            }
 
 
         }
@@ -757,14 +749,18 @@ $(function() {
                 self.isFilamentManagerInstalled(data.isFilamentManagerInstalled);
 
                 if (data.isCostEstimationPluginAvailable == true){
-                    self.isCostEstimationPluginAvailableText("<span style='color:green'>available</span>");
+                    self.isCostEstimationPluginAvailableText("available");
+                    self.isCostEstimationPluginAvailableColor("green");
                 } else {
-                    self.isCostEstimationPluginAvailableText("<span style='color:red'>not available</span>");
+                    self.isCostEstimationPluginAvailableText("not available");
+                    self.isCostEstimationPluginAvailableColor("red");
                 }
                 if (data.isPreHeatPluginAvailable == true){
-                    self.isPreHeatPluginAvailableText("<span style='color:green'>available</span>");
+                    self.isPreHeatPluginAvailableText("available");
+                    self.isPreHeatPluginAvailableColor("green");
                 } else {
-                    self.isPreHeatPluginAvailableText("<span style='color:red'>not available</span>");
+                    self.isPreHeatPluginAvailableText("not available");
+                    self.isPreHeatPluginAvailableColor("red");
                 }
                 self.currencySymbol(data.currencySymbol);
                 self.currencyFormat(data.currencyFormat);
@@ -779,17 +775,6 @@ $(function() {
                 } else {
                     // save message for later use, because binding is also not finished, but we received a message from backend
                     self.missingPluginDialogMessage = data.message;
-                }
-                return;
-            }
-
-            if ("showMessageConfirmDialog" == data.action){
-                // NOT POSSIBLE, because init not done
-                if (self.confirmMessageDialog != null && self.confirmMessageDialog.isInitialized()){
-                    self.confirmMessageDialog.showDialog(data.confirmMessageData);
-                } else {
-                    // save message for later use, because binding is also not finished, but we received a message from backend
-                    self.confirmMessageDialogData = data.confirmMessageData;
                 }
                 return;
             }
@@ -1067,7 +1052,7 @@ $(function() {
         self.selectedDatabaseIdsAsCSV = "";
 
         self.deleteSelectedPrintJobs = function(){
-            if (self.selectedDatabaseIdsAsCSV.trim().length >1) {
+            if (self.printJobHistoryTableHelper.selectedTableItems().length > 0) {
                 var result = confirm("Do you really want to delete all selected(" + self.printJobHistoryTableHelper.selectedTableItems().length + ") printjobs?");
                 if (result == true) {
                     self.apiClient.callRemovePrintJob("0?databaseIds=" + self.selectedDatabaseIdsAsCSV, function (responseData) {
@@ -1093,6 +1078,7 @@ $(function() {
         self.printJobHistoryTableHelper.selectedTableItems.subscribe(function(newValue) {
 
             var newCSVUrl = self.apiClient.getExportUrl("CSV");
+            self.selectedDatabaseIdsAsCSV = "";
             if (newValue != null && newValue.length > 0){
                 var databaseIds = "";
                 for (var itemIndex = 0; itemIndex<newValue.length; itemIndex++){

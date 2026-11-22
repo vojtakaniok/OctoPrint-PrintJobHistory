@@ -2,7 +2,6 @@
 from __future__ import absolute_import
 
 import logging
-import os
 import re
 
 class SlicerSettingsService(object):
@@ -38,7 +37,7 @@ class SlicerSettingsService(object):
 
 	def parseKeyValues(self, jobSettings, allKeys):
 		keyValueSettings = {}
-		if (jobSettings != None):
+		if (jobSettings is not None):
 			settingsLines = jobSettings.splitlines(False)
 			for line in settingsLines:
 
@@ -61,7 +60,7 @@ class SlicerSettingsService(object):
 						# keyValueSettings["key"] = key
 						# keyValueSettings["value"] = value
 
-						if ( (key in allKeys) == False):
+						if ( key not in allKeys):
 							allKeys.append(key)
 						# print("Key:" + key)
 						# print("Value:" + value)
@@ -75,7 +74,6 @@ class SlicerSettingsService(object):
 		compareResult.slicerSettingsJobList = slicerSettingsJobList
 		for currentKey in allKeys:
 
-			diffCount = 0
 			# loop over all jobs and look for the key
 
 			firstKeyValue = {}

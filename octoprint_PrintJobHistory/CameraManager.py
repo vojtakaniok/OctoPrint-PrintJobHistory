@@ -14,7 +14,6 @@ import logging
 import os.path
 import os
 import zipfile
-from io import StringIO
 
 SNAPSHOT_BACKUP_FILENAME = "snapshots-backup-{timestamp}.zip"
 
@@ -147,9 +146,19 @@ class CameraManager(object):
             zipf.write(os.path.join(path), path)
         zipf.close()
 
+    def _webcamSetting(self, key):
+        try:
+            # OctoPrint >= 1.9
+            from octoprint.webcams import get_snapshot_webcam
+            config = get_snapshot_webcam().config
+            return config.compat.snapshot if key == "snapshot" else getattr(config, key)
+        except (ImportError, AttributeError):
+            # OctoPrint < 1.9
+            return self._globalSettings.global_get(["webcam", key])
+
     def isCamaraSnahotURLPresent(self):
-        snapshotUrl = self._globalSettings.global_get(["webcam", "snapshot"])
-        if (snapshotUrl == None or len(str(snapshotUrl).strip()) == 0):
+        snapshotUrl = self._webcamSetting("snapshot")
+        if (snapshotUrl is None or len(str(snapshotUrl).strip()) == 0):
             return False
         return True
 
@@ -166,22 +175,22 @@ class CameraManager(object):
         else:
             snapshotFilename = self._snapshotStoragePath + "/" +snapshotFilename + ".png"
 
-        snapshotThumbnailFilename = self._snapshotStoragePath + "/" +snapshotFilename+ "-thumbnail.png"
+        # snapshotThumbnailFilename = self._snapshotStoragePath + "/" +snapshotFilename+ "-thumbnail.png"
 
 
         # streamUrl = self._settings.global_get(["webcam", "stream"])
-        snapshotUrl =  self._globalSettings.global_get(["webcam", "snapshot"])
+        snapshotUrl =  self._webcamSetting("snapshot")
 
-        self._logger.info("Try taking snapshot '" + snapshotFilename + "' from '" + snapshotUrl + "'")
-        if (snapshotUrl == None or len(str(snapshotUrl).strip()) == 0):
+        self._logger.info("Try taking snapshot '" + snapshotFilename + "' from '" + str(snapshotUrl) + "'")
+        if (snapshotUrl is None or len(str(snapshotUrl).strip()) == 0):
             self._logger.info("No snapshot camera url defined!")
-            if (callbackFunction != None):
+            if (callbackFunction is not None):
                 callbackFunction(False)
             return
 
-        rotate = self._globalSettings.global_get(["webcam", "rotate90"])
-        flipH = self._globalSettings.global_get(["webcam", "flipH"])
-        flipV = self._globalSettings.global_get(["webcam", "flipV"])
+        rotate = self._webcamSetting("rotate90")
+        flipH = self._webcamSetting("flipH")
+        flipV = self._webcamSetting("flipV")
 
         try:
             response = requests.get(snapshotUrl, verify=not True,timeout=float(10))
@@ -219,16 +228,16 @@ class CameraManager(object):
                 # hsize = int((float(img.size[1]) * float(wpercent)))
                 # img = img.resize((basewidth, hsize), Image.ANTIALIAS)
                 # img.save(snapshotThumbnailFilename, "JPEG")
-                if (callbackFunction != None):
+                if (callbackFunction is not None):
                     callbackFunction(True)
             else:
                 self._logger.error("Invalid response code from snapshot-url. Code:" + str(response.status_code))
-                if (callbackFunction != None):
+                if (callbackFunction is not None):
                     callbackFunction(False)
         except (Exception) as error:
             sendErrorMessageToClientFunction("Take Snapshot", "Unable to get snapshot from URL: " + snapshotUrl)
             self._logger.error(error)
-            if (callbackFunction != None):
+            if (callbackFunction is not None):
                 callbackFunction(False)
 
     def takeSnapshotAsync(self, snapshotFilename, sendErrorMessageToClientFunction, callbackFunction=None):
@@ -236,6 +245,12 @@ class CameraManager(object):
         thread.daemon = True
         thread.start()
 
+
+    def takeOctoPrintThumbnail(self, snapshotFilename, thumbnail):
+        im = Image.open(thumbnail).convert("RGBA")
+        bg = Image.new("RGBA", im.size, (255, 255, 255, 9))
+        bg.paste(im, im)
+        bg.save(self._snapshotStoragePath + "/" + snapshotFilename + ".png", 'PNG')
 
     def takePluginThumbnail(self, snapshotFilename, thumbnailLocation, storeImage = True):
 
@@ -268,7 +283,7 @@ class CameraManager(object):
             if (storeImage):
                 self._logger.info("Try converting thumbnail '" + thumbnailLocation + "' to '" + snapshotFilename + "'")
 
-                if convert == True:
+                if convert:
                     im = Image.open(thumbnailLocation).convert("RGBA")
                     # fill_color = (120, 8, 220)
                     # bg = Image.new("RGB", im.size, fill_color) see https://github.com/OllisGit/OctoPrint-PrintJobHistory/issues/160

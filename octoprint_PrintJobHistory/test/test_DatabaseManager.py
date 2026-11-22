@@ -1,11 +1,7 @@
-import pprint
 import unittest
-
-import peewee
 
 from octoprint_PrintJobHistory import DatabaseManager, CostModel
 from octoprint_PrintJobHistory.api import TransformPrintJob2JSON, TransformSlicerSettings2JSON
-from octoprint_PrintJobHistory.common import StringUtils
 from octoprint_PrintJobHistory.common import CSVExportImporter
 import logging
 
@@ -50,7 +46,7 @@ class TestDatabase(unittest.TestCase):
 		print(allJobsModels)
 		allJobsAsList = TransformPrintJob2JSON.transformAllPrintJobModels(allJobsModels)
 
-		pp = pprint.PrettyPrinter(indent=2)
+		# pp = pprint.PrettyPrinter(indent=2)
 		# pp.pprint(allJobsAsDict)
 		jobCount = 0
 		for jobItem in allJobsAsList:
@@ -89,7 +85,7 @@ class TestDatabase(unittest.TestCase):
 		print(allJobsModels)
 		allJobsAsList = TransformPrintJob2JSON.transformAllPrintJobModels(allJobsModels)
 
-		pp = pprint.PrettyPrinter(indent=2)
+		# pp = pprint.PrettyPrinter(indent=2)
 		# pp.pprint(allJobsAsDict)
 		for jobItem in allJobsAsList:
 			print(str(jobItem["databaseId"]) + "  " + str(jobItem["printStartDateTimeFormatted"]) + "  " + str(jobItem["printEndDateTimeFormatted"]))
@@ -134,7 +130,6 @@ class TestDatabase(unittest.TestCase):
 
 
 	def _test_something(self):
-		db = peewee.SqliteDatabase(self.databaselocation+'/printJobHistory.db')
 		singlePrintJob = PrintJobModel.select().join(FilamentModel).where(PrintJobModel.databaseId == 109).get()
 		print(singlePrintJob)
 		print(singlePrintJob.fileName)
@@ -152,12 +147,11 @@ class TestDatabase(unittest.TestCase):
 
 	def _test_one2oneAsso(self):
 
-		jobAsDict = []
 		printJob = self.databaseManager.loadPrintJob(16)
 
 		costs = printJob.getCosts()
 
-		if (costs == None):
+		if (costs is None):
 			newCostModel = CostModel()
 			newCostModel.totalCosts = 1.234
 

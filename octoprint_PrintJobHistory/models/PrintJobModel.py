@@ -6,8 +6,7 @@ from octoprint_PrintJobHistory.models.BaseModel import BaseModel
 # DO NOT IMPORT  from octoprint_PrintJobHistory.models.FilamentModel import FilamentModel
 
 
-from peewee import CharField, Model, DecimalField, FloatField, DateField, DateTimeField, TextField, ForeignKeyField, \
-	ManyToManyField, IntegerField
+from peewee import CharField, DateTimeField, TextField, IntegerField
 
 
 class PrintJobModel(BaseModel):
@@ -42,9 +41,9 @@ class PrintJobModel(BaseModel):
 	# 	pass
 
 	def getCosts(self):
-		if (self.costModel == None):
+		if (self.costModel is None):
 			# load costs from database
-			if (self.costs != None and len(self.costs) > 0):
+			if (self.costs is not None and len(self.costs) > 0):
 				self.costModel = self.costs[0]
 		return self.costModel
 
@@ -54,20 +53,20 @@ class PrintJobModel(BaseModel):
 
 	def addFilamentModel(self, filamentModel):
 		#  check preconditions
-		if (filamentModel == None):
+		if (filamentModel is None):
 			return
 		if (StringUtils.isEmpty(filamentModel.toolId)):
 			raise AttributeError("You can only add a FilamentModel with an toolId")
 
 		filamentModel.printJob = self
-		if (self.filamentModelsByToolId == None or len(self.filamentModelsByToolId) == 0):
+		if (self.filamentModelsByToolId is None or len(self.filamentModelsByToolId) == 0):
 			self._loadFilamentModels()
 
 		self.filamentModelsByToolId[filamentModel.toolId] = filamentModel
 		pass
 
 	def getFilamentModels(self, withoutTotal = False):
-		if (self.filamentModelsByToolId == None or len(self.filamentModelsByToolId) == 0):
+		if (self.filamentModelsByToolId is None or len(self.filamentModelsByToolId) == 0):
 			self._loadFilamentModels()
 		allFilamentModels = self.filamentModelsByToolId.values()
 		if (withoutTotal):
@@ -82,7 +81,7 @@ class PrintJobModel(BaseModel):
 
 	def getFilamentModelByToolId(self, toolId):
 		# load and init dict
-		if (self.filamentModelsByToolId == None or len(self.filamentModelsByToolId) == 0):
+		if (self.filamentModelsByToolId is None or len(self.filamentModelsByToolId) == 0):
 			self._loadFilamentModels()
 
 		if (toolId in self.filamentModelsByToolId):
@@ -95,7 +94,7 @@ class PrintJobModel(BaseModel):
 		self.filamentModelsByToolId = {}
 		# load from database
 		allFilaments = self._getFilamentModelsFromAsso()
-		if (allFilaments != None and len(allFilaments) > 0):
+		if (allFilaments is not None and len(allFilaments) > 0):
 			for filament in allFilaments:
 				self.filamentModelsByToolId[filament.toolId] = filament
 
@@ -106,14 +105,14 @@ class PrintJobModel(BaseModel):
 
 	# Because I don't know how to add relation-models to peewee I use a temp-array
 	def addTemperatureModel(self, temperatureModel):
-		if self.allTemperatures == None:
+		if self.allTemperatures is None:
 			self.allTemperatures = []
 		temperatureModel.printJob = self
 		self.allTemperatures.append(temperatureModel)
 		pass
 
 	def getTemperatureModels(self):
-		if (self.allTemperatures == None):
+		if (self.allTemperatures is None):
 			self.allTemperatures = []
 
 		tempAssos = self._getTemperatureModelsFromAsso()
