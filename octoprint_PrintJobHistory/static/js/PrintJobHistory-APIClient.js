@@ -85,12 +85,8 @@ function PrintJobHistoryAPIClient(pluginId, baseUrl) {
     // load FILTERED/SORTED PrintJob-Items
     this.callLoadPrintJobsByQuery = function (tableQuery, responseHandler){
         query = _buildRequestQuery(tableQuery);
-        urlToCall = this.baseUrl + "plugin/"+this.pluginId+"/loadPrintJobHistoryByQuery?"+query;
-        $.ajax({
-            //url: API_BASEURL + "plugin/"+PLUGIN_ID+"/loadPrintJobHistory",
-            url: urlToCall,
-            type: "GET"
-        }).done(function( data ){
+        urlToCall = "plugin/"+this.pluginId+"/loadPrintJobHistoryByQuery?"+query;
+        OctoPrint.get(urlToCall).done(function( data ){
             responseHandler(data)
             //shoud be done by the server to make sure the server is informed countdownDialog.modal('hide');
             //countdownDialog.modal('hide');
@@ -100,12 +96,8 @@ function PrintJobHistoryAPIClient(pluginId, baseUrl) {
     // load STATISTICS PrintJob-Items
     this.callLoadStatisticsByQuery = function (tableQuery, responseHandler){
         query = _buildRequestQuery(tableQuery);
-        urlToCall = this.baseUrl + "plugin/"+this.pluginId+"/loadStatisticByQuery?"+query;
-        $.ajax({
-            //url: API_BASEURL + "plugin/"+PLUGIN_ID+"/loadPrintJobHistory",
-            url: urlToCall,
-            type: "GET"
-        }).done(function( data ){
+        urlToCall = "plugin/"+this.pluginId+"/loadStatisticByQuery?"+query;
+        OctoPrint.get(urlToCall).done(function( data ){
             responseHandler(data)
             //shoud be done by the server to make sure the server is informed countdownDialog.modal('hide');
             //countdownDialog.modal('hide');
@@ -115,11 +107,8 @@ function PrintJobHistoryAPIClient(pluginId, baseUrl) {
 
     // load COMPARE SlicerSettigs
     this.callCompareSlicerSettings = function (selectedJobDatabaseIds, responseHandler){
-        urlToCall = this.baseUrl + "plugin/"+this.pluginId+"/compareSlicerSettings/?databaseIds="+selectedJobDatabaseIds;
-        $.ajax({
-            url: urlToCall,
-            type: "GET"
-        }).done(function( data ){
+        urlToCall = "plugin/"+this.pluginId+"/compareSlicerSettings/?databaseIds="+selectedJobDatabaseIds;
+        OctoPrint.get(urlToCall).done(function( data ){
             responseHandler(data)
             //shoud be done by the server to make sure the server is informed countdownDialog.modal('hide');
             //countdownDialog.modal('hide');
@@ -128,11 +117,7 @@ function PrintJobHistoryAPIClient(pluginId, baseUrl) {
     }
 
     this.callDeleteDatabase = function(responseHandler){
-        $.ajax({
-            //url: API_BASEURL + "plugin/"+PLUGIN_ID+"/loadPrintJobHistory",
-            url: this.baseUrl + "plugin/"+this.pluginId+"/deleteDatabase",
-            type: "DELETE"
-        }).done(function( data ){
+        OctoPrint.delete("plugin/"+this.pluginId+"/deleteDatabase").done(function( data ){
             responseHandler(data)
             //shoud be done by the server to make sure the server is informed countdownDialog.modal('hide');
             //countdownDialog.modal('hide');
@@ -144,13 +129,8 @@ function PrintJobHistoryAPIClient(pluginId, baseUrl) {
     this.callStorePrintJob = function (databaseId, printJobItem, responseHandler){
         jsonPayload = ko.toJSON(printJobItem)
 
-        $.ajax({
-            //url: API_BASEURL + "plugin/"+PLUGIN_ID+"/loadPrintJobHistory",
-            url: this.baseUrl + "plugin/" + this.pluginId + "/storePrintJob/" + databaseId,
-            dataType: "json",
-            contentType: "application/json; charset=UTF-8",
-            data: jsonPayload,
-            type: "PUT"
+        OctoPrint.put("plugin/" + this.pluginId + "/storePrintJob/" + databaseId, jsonPayload, {
+            contentType: "application/json; charset=UTF-8"
         }).done(function( data ){
             responseHandler();
         });
@@ -158,81 +138,54 @@ function PrintJobHistoryAPIClient(pluginId, baseUrl) {
 
     // remove PrintJob-Item
     this.callRemovePrintJob = function (databaseId, responseHandler){
-        $.ajax({
-            //url: API_BASEURL + "plugin/"+PLUGIN_ID+"/loadPrintJobHistory",
-            url: this.baseUrl + "plugin/" + this.pluginId + "/removePrintJob/" + databaseId,
-            type: "DELETE"
-        }).done(function( data ){
+        OctoPrint.delete("plugin/" + this.pluginId + "/removePrintJob/" + databaseId).done(function( data ){
             responseHandler();
         });
     }
 
     // select PrintJob-Item for printing
     this.callSelectPrintJobForPrinting = function (databaseId, responseHandler){
-        $.ajax({
-            //url: API_BASEURL + "plugin/"+PLUGIN_ID+"/loadPrintJobHistory",
-            url: this.baseUrl + "plugin/" + this.pluginId + "/selectPrintJobForPrint/" + databaseId,
-            type: "PUT"
-        }).done(function( data ){
+        OctoPrint.put("plugin/" + this.pluginId + "/selectPrintJobForPrint/" + databaseId).done(function( data ){
             responseHandler();
         });
     }
 
     // confirm the message dialog
     this.callConfirmMessageDialog =  function (){
-        $.ajax({
-            url: this.baseUrl + "plugin/"+ this.pluginId +"/confirmMessageDialog",
-            type: "PUT"
-        }).done(function( data ){
+        OctoPrint.put("plugin/"+ this.pluginId +"/confirmMessageDialog").done(function( data ){
             //responseHandler(data)
         });
     }
 
     // deactivate the Plugin/Check
     this.callDeactivatePluginCheck =  function (){
-        $.ajax({
-            url: this.baseUrl + "plugin/"+ this.pluginId +"/deactivatePluginCheck",
-            type: "PUT"
-        }).done(function( data ){
+        OctoPrint.put("plugin/"+ this.pluginId +"/deactivatePluginCheck").done(function( data ){
             //responseHandler(data)
         });
     }
 
 
     this.callResetPrintJobReportTemplate =  function (reportType, responseHandler){
-        $.ajax({
-            url: this.baseUrl + "plugin/"+ this.pluginId +"/resetPrintJobReportTemplate/"+reportType,
-            type: "PUT"
-        }).done(function( data ){
+        OctoPrint.put("plugin/"+ this.pluginId +"/resetPrintJobReportTemplate/"+reportType).done(function( data ){
             responseHandler(data)
         });
     }
 
     this.callTakeSnapshot =  function (snapshotFilename, responseHandler){
-        $.ajax({
-            url: this.baseUrl + "plugin/"+ this.pluginId +"/takeSnapshot/"+snapshotFilename,
-            type: "PUT"
-        }).always(function( data ){
+        OctoPrint.put("plugin/"+ this.pluginId +"/takeSnapshot/"+snapshotFilename).always(function( data ){
             responseHandler(data)
         });
     }
 
     // delete snapshotImage
     this.callDeleteSnapshotImage =  function (snapshotFilename, responseHandler){
-        $.ajax({
-            url: this.baseUrl + "plugin/"+ this.pluginId +"/deleteSnapshotImage/"+snapshotFilename,
-            type: "DELETE"
-        }).done(function( data ){
+        OctoPrint.delete("plugin/"+ this.pluginId +"/deleteSnapshotImage/"+snapshotFilename).done(function( data ){
             responseHandler(data)
         });
     }
 
     this.callForceCloseEditDialog = function(responseHandler){
-        $.ajax({
-            //url: API_BASEURL + "plugin/"+PLUGIN_ID+"/loadPrintJobHistory",
-            url: this.baseUrl + "plugin/"+this.pluginId+"/forceCloseEditDialog",
-            type: "PUT"
-        }).done(function( data ){
+        OctoPrint.put("plugin/"+this.pluginId+"/forceCloseEditDialog").done(function( data ){
             responseHandler(data)
             //shoud be done by the server to make sure the server is informed countdownDialog.modal('hide');
             //countdownDialog.modal('hide');

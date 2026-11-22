@@ -110,7 +110,6 @@ function PrintJobHistoryEditDialog(){
             dataType: "json",
             maxNumberOfFiles: 1,
             autoUpload: false,
-            headers: OctoPrint.getRequestHeaders(),
             add: function(e, data) {
                 self.snapshotSuccessMessageSpan.hide();
                 self.snapshotErrorMessageSpan.hide();

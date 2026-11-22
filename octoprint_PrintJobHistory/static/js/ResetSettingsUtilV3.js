@@ -33,10 +33,7 @@ function ResetSettingsUtilV3(pluginSettings){
         pluginSettingsLink.click(function() {
             // call backend, is resetSettingsButtonEnabled
             // hide reset settings button
-            $.ajax({
-                url: API_BASEURL + "plugin/"+PLUGIN_ID_string+"?action=isResetSettingsEnabled",
-                type: "GET"
-            }).done(function( data ){
+            OctoPrint.simpleApiGet(PLUGIN_ID_string, {data: {action: "isResetSettingsEnabled"}}).done(function( data ){
                 var resetButton = $("#" + RESET_BUTTON_ID);
                 if (data.enabled == "true"){
                     // build-button, if necessary
@@ -49,10 +46,7 @@ function ResetSettingsUtilV3(pluginSettings){
                     // add/update click action
                     resetButton.unbind( "click" );
                     resetButton.click(function() {
-                        $.ajax({
-                            url: API_BASEURL + "plugin/"+PLUGIN_ID_string+"?action=resetSettings",
-                            type: "GET"
-                        }).done(function( data ){
+                        OctoPrint.simpleApiGet(PLUGIN_ID_string, {data: {action: "resetSettings"}}).done(function( data ){
                             new PNotify({
                                 title: "Default settings saved!",
                                 text: "The plugin settings have now been reset to the default values.<br>Please do a Browser reload (Strg + F5) to update all settings in the UI.",
