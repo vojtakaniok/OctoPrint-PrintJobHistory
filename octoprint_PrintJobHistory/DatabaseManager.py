@@ -16,7 +16,7 @@ from octoprint_PrintJobHistory.models.PrintJobModel import PrintJobModel
 from octoprint_PrintJobHistory.models.PluginMetaDataModel import PluginMetaDataModel
 # from octoprint_PrintJobHistory.models.PrintJobSpoolMapModel import PrintJobSpoolMapModel
 from octoprint_PrintJobHistory.models.TemperatureModel import TemperatureModel
-from peewee import *
+from peewee import PostgresqlDatabase, SqliteDatabase, fn
 
 
 FORCE_CREATE_TABLES = False
@@ -56,7 +56,7 @@ class DatabaseManager(object):
 			else:
 				self._logger.error(str(e))
 
-		if not schemeVersionFromDatabaseModel == None:
+		if schemeVersionFromDatabaseModel is not None:
 			currentDatabaseSchemeVersion = int(schemeVersionFromDatabaseModel.value)
 			if (currentDatabaseSchemeVersion < CURRENT_DATABASE_SCHEME_VERSION):
 				# evautate upgrade steps (from 1-2 , 1...6)
@@ -390,7 +390,6 @@ class DatabaseManager(object):
 		# self._logger.info("Check if database-scheme upgrade needed.")
 		# self._createOrUpgradeSchemeIfNecessary()
 
-		schemeVersion = None
 		jobCount = None
 		try:
 			databaseToTest.connect(reuse_if_open=True)
@@ -419,7 +418,7 @@ class DatabaseManager(object):
 			# Because this block of code is wrapped with "atomic", a
 			# new transaction will begin automatically after the call
 			# to rollback().
-			errorMessage =  str(e);
+			errorMessage =  str(e)
 			self._logger.warning("Test Database-Connection failed:" +errorMessage)
 			return {
 				"error": errorMessage
@@ -476,7 +475,7 @@ class DatabaseManager(object):
 		currentSchemeVersion = "unknown"
 		try:
 			currentSchemeVersion = PluginMetaDataModel.get(PluginMetaDataModel.key == PluginMetaDataModel.KEY_DATABASE_SCHEME_VERSION)
-			if (currentSchemeVersion != None):
+			if (currentSchemeVersion is not None):
 				currentSchemeVersion = str(currentSchemeVersion.value)
 		except Exception as e:
 			self._logger.exception("Could not read databasescheme version:" + str(e))
@@ -528,7 +527,7 @@ class DatabaseManager(object):
 					temperatureModel.printJob = printJobModel
 					temperatureModel.save()
 				# - Costs
-				if (printJobModel.getCosts() != None):
+				if (printJobModel.getCosts() is not None):
 					printJobModel.getCosts().save()
 
 				# do expicit commit
@@ -550,7 +549,6 @@ class DatabaseManager(object):
 		with self._database.atomic() as transaction:  # Opens new transaction.
 			try:
 				printJobModel.save()
-				databaseId = printJobModel.get_id()
 				# save all relations
 				# - Filament
 				for filamentModel in printJobModel.getFilamentModels():
@@ -562,7 +560,7 @@ class DatabaseManager(object):
 				# 	temperatureModel.save()
 
 				# - Costs
-				if (printJobModel.getCosts() != None):
+				if (printJobModel.getCosts() is not None):
 					printJobModel.getCosts().save()
 			except Exception as e:
 				# Because this block of code is wrapped with "atomic", a
@@ -596,12 +594,12 @@ class DatabaseManager(object):
 
 		for job in allJobModels:
 			printJobCount = printJobCount + 1
-			if (firstDate == None):
+			if (firstDate is None):
 				firstDate = job.printStartDateTime
-			if (job.printEndDateTime != None):
+			if (job.printEndDateTime is not None):
 				lastDate = job.printEndDateTime
 			tempJobFileSize = job.fileSize
-			if (tempJobFileSize == None):
+			if (tempJobFileSize is None):
 				tempJobFileSize = 0
 			fileSize = fileSize + tempJobFileSize
 			duration = duration + job.duration
@@ -615,17 +613,17 @@ class DatabaseManager(object):
 				statusDict[statusResult] = 1
 
 			allFilaments = job.getFilamentModels()
-			if allFilaments != None:
+			if allFilaments is not None:
 				for filla in allFilaments:
 					if filla.toolId == "total":
 						# exclude totals, otherwise everything is counted twice
 						continue
-					if (StringUtils.isEmpty(filla.usedLength) == False):
+					if (not StringUtils.isEmpty(filla.usedLength)):
 						length = length + filla.usedLength
-					if (StringUtils.isEmpty(filla.usedWeight) == False):
+					if (not StringUtils.isEmpty(filla.usedWeight)):
 						weight = weight + filla.usedWeight
 
-					if (StringUtils.isEmpty(filla.spoolName) == False):
+					if (not StringUtils.isEmpty(filla.spoolName)):
 						# spoolsSet.add(filla.spoolName)
 						if (filla.spoolName in spoolDict):
 							currentCount = spoolDict[filla.spoolName]
@@ -634,7 +632,7 @@ class DatabaseManager(object):
 						else:
 							spoolDict[filla.spoolName] = 1
 
-					if (StringUtils.isEmpty(filla.material) == False):
+					if (not StringUtils.isEmpty(filla.material)):
 						# materialsSet.add(filla.material)
 						if (filla.material in materialDict):
 							currentCount = materialDict[filla.material]
@@ -646,7 +644,7 @@ class DatabaseManager(object):
 		# do formatting
 		queryString = self._buildQueryString(tableQuery)
 		lastDateString = ""
-		if (lastDate != None):
+		if (lastDate is not None):
 			lastDateString = lastDate.strftime('%d.%m.%Y %H:%M')
 		fromToString = firstDate.strftime('%d.%m.%Y %H:%M') + " - " + lastDateString
 		durationString = StringUtils.secondsToText(duration)
@@ -859,23 +857,23 @@ class DatabaseManager(object):
 
 	def loadPrintJob(self, databaseId):
 		databaseIdAsInt = StringUtils.transformToIntOrNone(databaseId)
-		if (databaseIdAsInt == None):
+		if (databaseIdAsInt is None):
 			self._logger.error("Could not load PrintJob, because not a valid databaseId '"+str(databaseId)+"' maybe not a number")
 			return None
 		return PrintJobModel.get_or_none(databaseIdAsInt)
 
 	def deletePrintJob(self, databaseId):
 		databaseIdAsInt = StringUtils.transformToIntOrNone(databaseId)
-		if (databaseIdAsInt == None):
+		if (databaseIdAsInt is None):
 			self._logger.error("Could not delete PrintJob, because not a valid databaseId '"+str(databaseId)+"' maybe not a number")
 			return None
 
 		with self._database.atomic() as transaction:  # Opens new transaction.
 			try:
 				# first delete relations
-				n = FilamentModel.delete().where(FilamentModel.printJob == databaseIdAsInt).execute()
-				n = TemperatureModel.delete().where(TemperatureModel.printJob == databaseIdAsInt).execute()
-				n = CostModel.delete().where(CostModel.printJob == databaseIdAsInt).execute()
+				FilamentModel.delete().where(FilamentModel.printJob == databaseIdAsInt).execute()
+				TemperatureModel.delete().where(TemperatureModel.printJob == databaseIdAsInt).execute()
+				CostModel.delete().where(CostModel.printJob == databaseIdAsInt).execute()
 
 				PrintJobModel.delete_by_id(databaseIdAsInt)
 			except Exception as e:

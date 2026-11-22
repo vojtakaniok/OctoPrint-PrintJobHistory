@@ -14,7 +14,6 @@ import logging
 import os.path
 import os
 import zipfile
-from io import StringIO
 
 SNAPSHOT_BACKUP_FILENAME = "snapshots-backup-{timestamp}.zip"
 
@@ -149,7 +148,7 @@ class CameraManager(object):
 
     def isCamaraSnahotURLPresent(self):
         snapshotUrl = self._globalSettings.global_get(["webcam", "snapshot"])
-        if (snapshotUrl == None or len(str(snapshotUrl).strip()) == 0):
+        if (snapshotUrl is None or len(str(snapshotUrl).strip()) == 0):
             return False
         return True
 
@@ -166,16 +165,16 @@ class CameraManager(object):
         else:
             snapshotFilename = self._snapshotStoragePath + "/" +snapshotFilename + ".png"
 
-        snapshotThumbnailFilename = self._snapshotStoragePath + "/" +snapshotFilename+ "-thumbnail.png"
+        # snapshotThumbnailFilename = self._snapshotStoragePath + "/" +snapshotFilename+ "-thumbnail.png"
 
 
         # streamUrl = self._settings.global_get(["webcam", "stream"])
         snapshotUrl =  self._globalSettings.global_get(["webcam", "snapshot"])
 
         self._logger.info("Try taking snapshot '" + snapshotFilename + "' from '" + snapshotUrl + "'")
-        if (snapshotUrl == None or len(str(snapshotUrl).strip()) == 0):
+        if (snapshotUrl is None or len(str(snapshotUrl).strip()) == 0):
             self._logger.info("No snapshot camera url defined!")
-            if (callbackFunction != None):
+            if (callbackFunction is not None):
                 callbackFunction(False)
             return
 
@@ -219,16 +218,16 @@ class CameraManager(object):
                 # hsize = int((float(img.size[1]) * float(wpercent)))
                 # img = img.resize((basewidth, hsize), Image.ANTIALIAS)
                 # img.save(snapshotThumbnailFilename, "JPEG")
-                if (callbackFunction != None):
+                if (callbackFunction is not None):
                     callbackFunction(True)
             else:
                 self._logger.error("Invalid response code from snapshot-url. Code:" + str(response.status_code))
-                if (callbackFunction != None):
+                if (callbackFunction is not None):
                     callbackFunction(False)
         except (Exception) as error:
             sendErrorMessageToClientFunction("Take Snapshot", "Unable to get snapshot from URL: " + snapshotUrl)
             self._logger.error(error)
-            if (callbackFunction != None):
+            if (callbackFunction is not None):
                 callbackFunction(False)
 
     def takeSnapshotAsync(self, snapshotFilename, sendErrorMessageToClientFunction, callbackFunction=None):
@@ -268,7 +267,7 @@ class CameraManager(object):
             if (storeImage):
                 self._logger.info("Try converting thumbnail '" + thumbnailLocation + "' to '" + snapshotFilename + "'")
 
-                if convert == True:
+                if convert:
                     im = Image.open(thumbnailLocation).convert("RGBA")
                     # fill_color = (120, 8, 220)
                     # bg = Image.new("RGB", im.size, fill_color) see https://github.com/OllisGit/OctoPrint-PrintJobHistory/issues/160

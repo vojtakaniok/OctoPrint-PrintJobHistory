@@ -7,7 +7,7 @@ import tempfile
 import threading
 
 import octoprint.plugin
-from flask import jsonify, request, make_response, Response, send_file
+from flask import request, Response, send_file
 import flask
 
 import json
@@ -17,9 +17,7 @@ import os
 from datetime import datetime
 from datetime import timedelta
 
-from werkzeug.datastructures import Headers
 
-from octoprint.filemanager import FileDestinations
 
 from octoprint_PrintJobHistory import PrintJobModel, TemperatureModel, FilamentModel, CostModel
 from octoprint_PrintJobHistory.api import TransformPrintJob2JSON, TransformSlicerSettings2JSON
@@ -74,7 +72,7 @@ class PrintJobHistoryAPI(octoprint.plugin.BlueprintPlugin):
         filamentModelTotal.usedCost = self._getValueFromJSONOrNone("usedCost", jsonData)
 
         # temperatureModel = TemperatureModel
-        if (printJobModel.databaseId != None):
+        if (printJobModel.databaseId is not None):
             allTemperaturesModels = printJobModel.getTemperatureModels()
         else:
             allTemperaturesModels = printJobModel.allTemperatures
@@ -97,13 +95,13 @@ class PrintJobHistoryAPI(octoprint.plugin.BlueprintPlugin):
         otherCost = self._toFloatFromJSONOrNone("otherCost", jsonData)
         withDefaultSpoolValues = self._getValueFromJSONOrNone("withDefaultSpoolValues", jsonData)
 
-        if (totalCosts != None or
-            filamentCost != None or
-            electricityCost != None or
-            printerCost != None or
-            otherCost != None):
+        if (totalCosts is not None or
+            filamentCost is not None or
+            electricityCost is not None or
+            printerCost is not None or
+            otherCost is not None):
             # okay, we need to save the data, update or insert
-            if (printJobModel.getCosts() == None):
+            if (printJobModel.getCosts() is None):
                 costs = CostModel()
                 printJobModel.setCosts(costs)
             else:
@@ -126,7 +124,7 @@ class PrintJobHistoryAPI(octoprint.plugin.BlueprintPlugin):
 
     def _toIntFromJSONOrNone(self, key, json):
         value = self._getValueFromJSONOrNone(key, json)
-        if (value != None):
+        if (value is not None):
             if (StringUtils.isNotEmpty(value)):
                 try:
                     value = int(value)
@@ -140,7 +138,7 @@ class PrintJobHistoryAPI(octoprint.plugin.BlueprintPlugin):
 
     def _toFloatFromJSONOrNone(self, key, json):
         value = self._getValueFromJSONOrNone(key, json)
-        if (value != None):
+        if (value is not None):
             if (StringUtils.isNotEmpty(value)):
                 try:
                     value = float(value)
@@ -154,7 +152,7 @@ class PrintJobHistoryAPI(octoprint.plugin.BlueprintPlugin):
 
     #  convert m to mm
     def _convertM2MM(self, value):
-        if (value == None or value == ""):
+        if (value is None or value == ""):
             return 0.0
         floatValue = float(value)
         return floatValue * 1000.0
@@ -287,7 +285,7 @@ class PrintJobHistoryAPI(octoprint.plugin.BlueprintPlugin):
 
             slicerService = SlicerSettingsService(self._logger)
             slicerSettingsExpressions = self._settings.get([SettingsKeys.SETTINGS_KEY_SLICERSETTINGS_KEYVALUE_EXPRESSION])
-            if (slicerSettingsExpressions != None and len(slicerSettingsExpressions) != 0):
+            if (slicerSettingsExpressions is not None and len(slicerSettingsExpressions) != 0):
                 compareResult = slicerService.compareSlicerSettings(slicerSettingssJobToCompareList, slicerSettingsExpressions)
                 compoareResultAsJson = TransformSlicerSettings2JSON.transformSlicerSettingsCompareResult(compareResult)
 
@@ -315,8 +313,8 @@ class PrintJobHistoryAPI(octoprint.plugin.BlueprintPlugin):
     @octoprint.plugin.BlueprintPlugin.route("/selectPrintJobForPrint/<int:databaseId>", methods=["PUT"])
     def put_select_printjob(self, databaseId):
 
-        printJobModel = self._databaseManager.loadPrintJob(databaseId);
-        if (printJobModel == None):
+        printJobModel = self._databaseManager.loadPrintJob(databaseId)
+        if (printJobModel is None):
             # PrintJob was deleted
             message = "PrintJob not in database anymore! Selection not possible."
             self._logger.error(message)
@@ -330,14 +328,14 @@ class PrintJobHistoryAPI(octoprint.plugin.BlueprintPlugin):
                                                                 printJobModel.filePathName,
                                                                 printJobModel.fileName)
         fullFileLocation = printJobPrintable["fullFileLocation"]
-        if (printJobPrintable["isRePrintable"] == False):
+        if (not printJobPrintable["isRePrintable"]):
             message = "PrintJob not found in: " +fullFileLocation
             self._logger.error(message)
             self._sendDataToClient(dict(action="errorPopUp",
                                         title="Print selection not possible",
                                         message=message))
             return flask.jsonify()
-        sd = False if (printJobModel.fileOrigin != None and printJobModel.fileOrigin == "local") else True
+        sd = False if (printJobModel.fileOrigin is not None and printJobModel.fileOrigin == "local") else True
         self._printer.select_file(fullFileLocation, sd)
 
         return flask.jsonify()
@@ -354,7 +352,7 @@ class PrintJobHistoryAPI(octoprint.plugin.BlueprintPlugin):
             allJobsModels.append(self._databaseManager.loadPrintJob(databaseId))
 
         for printJob in allJobsModels:
-            if (printJob == None):
+            if (printJob is None):
                 continue
             self._databaseManager.deletePrintJob(printJob.databaseId)
             snapshotFilename = CameraManager.buildSnapshotFilename(printJob.printStartDateTime)
@@ -397,20 +395,20 @@ class PrintJobHistoryAPI(octoprint.plugin.BlueprintPlugin):
                     self._cameraManager.renameSnapshotFilename(oldStartDateTimeIfChanged, newStartDateTime)
                 except (Exception) as error:
                     self._logger.error(error)
-                    message = errorMessage = str(error)
+                    message = str(error)
                     self._sendDataToClient(dict(action="errorPopUp",
                                                 title= "could not rename snapshot image to new startdatetime",
                                                 message=message))
 
 
         def imageRollbackHandler():
-            if (oldStartDateTimeIfChanged != None):
+            if (oldStartDateTimeIfChanged is not None):
                 # do rollback on snapshotimage filename
                 try:
                     self._cameraManager.renameSnapshotFilename(newStartDateTime, oldStartDateTimeIfChanged)
                 except (Exception) as error:
                     self._logger.error(error)
-                    message = errorMessage = str(error)
+                    message = str(error)
                     self._sendDataToClient(dict(action="errorPopUp",
                                                 title= "could not rename snapshot image to new startdatetime",
                                                 message=message))
@@ -701,7 +699,7 @@ class PrintJobHistoryAPI(octoprint.plugin.BlueprintPlugin):
                     continue # just ignore
                 pass
 
-            if (isFilamentValuesPresent == True):
+            if (isFilamentValuesPresent):
                 filamentModel.toolId = "total"
                 printJob.addFilamentModel(filamentModel)
 
@@ -730,7 +728,7 @@ class PrintJobHistoryAPI(octoprint.plugin.BlueprintPlugin):
         else:
             printJobModel = self._databaseManager.loadPrintJob(databaseId)
 
-        if (printJobModel == None):
+        if (printJobModel is None):
             # PrintJob was deleted
             message = "PrintJob not in database anymore! PrintReport not possible."
             self._logger.error(message)

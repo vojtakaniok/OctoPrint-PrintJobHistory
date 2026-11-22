@@ -23,7 +23,7 @@ def transformPrintJobModel(job, fileManager, deleteDateTimeFromDict = True):
 	jobAsDict["fileSizeFormatted"] = fileSizeFormatted
 	# -- filament
 	allFilaments = job.getFilamentModels()
-	if allFilaments != None:
+	if allFilaments is not None:
 		allFilamentDict = {}
 		for filament in allFilaments:
 
@@ -43,7 +43,7 @@ def transformPrintJobModel(job, fileManager, deleteDateTimeFromDict = True):
 		jobAsDict['filamentModels'] = allFilamentDict
 	# -- temperatures
 	allTemperatures = job.getTemperatureModels()
-	if not allTemperatures == None and len(allTemperatures) > 0:
+	if allTemperatures is not None and len(allTemperatures) > 0:
 		allTempsAsList = list()
 
 		for temp in allTemperatures:
@@ -56,7 +56,7 @@ def transformPrintJobModel(job, fileManager, deleteDateTimeFromDict = True):
 	# -- costs
 	isCostsAvailable = False
 	costs = job.getCosts()
-	if (costs != None):
+	if (costs is not None):
 		costsAsDict = costs.__data__
 		del costsAsDict["created"]
 		jobAsDict["costs"] = costsAsDict
@@ -89,7 +89,7 @@ def transformAllPrintJobModels(allJobsModels, fileManager, deleteDateTimeFromDic
 
 #  convert mm to m
 def convertMM2M(value):
-	if (value == None or not isinstance(value, float)):
+	if (value is None or not isinstance(value, float)):
 		return ""
 	floatValue = float(value)
 	return floatValue / 1000.0

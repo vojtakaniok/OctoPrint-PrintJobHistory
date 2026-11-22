@@ -68,7 +68,7 @@ class SlicerSettingsParser(object):
 				else:
 					# Reverse reading
 					# Jump to the end
-					if (reverseReadinStarted == False):
+					if (not reverseReadinStarted):
 						fileHandle.seek(0, os.SEEK_END)
 						reverseReadinStarted = True
 						lineNumber = 0
@@ -94,7 +94,7 @@ class SlicerSettingsParser(object):
 					if (lastLineResult == LINE_RESULT_GCODE):
 						if (gcodeCount >= MAX_GCODE_LINES_BEFORE_STOP_READING):
 							# forward reading finished, switch to reverse
-							if (reverseReadinStarted == True):
+							if (reverseReadinStarted):
 								# finaly top/Bottom reading is done
 								break
 							readingOrder += 1
@@ -103,7 +103,7 @@ class SlicerSettingsParser(object):
 					gcodeCount = 0
 				lastLineResult = lineResult
 
-				debugInformation = "ORDER: " + str(readingOrder) + " LineNumber: " + str(lineNumber) + " GCodeFound: " + str(gcodeCount)
+				# debugInformation = "ORDER: " + str(readingOrder) + " LineNumber: " + str(lineNumber) + " GCodeFound: " + str(gcodeCount)
 				# print(debugInformation)
 				# self._logger.debug(debugInformation)
 
@@ -117,7 +117,7 @@ class SlicerSettingsParser(object):
 	# Process a Single-Line
 	def _processLine(self, line, slicerSettings):
 		# print(line)
-		if (line == None or line == '' ):
+		if (line is None or line == '' ):
 			# EMPTY
 			return LINE_RESULT_OTHERS
 
@@ -150,7 +150,7 @@ class SlicerSettingsParser(object):
 				# 	value = keyValue[1].strip()
 					key = str(matched.group(1)).strip()
 					value = str(matched.group(2)).strip()
-					if (slicerSettings.isKeyAlreadyExtracted(key) == False):
+					if (not slicerSettings.isKeyAlreadyExtracted(key)):
 						slicerSettings.addKeyValueSetting(key, value)
 						slicerSettings.addKeyValueSettingsAsText(line)
 					return LINE_RESULT_SETTINGS

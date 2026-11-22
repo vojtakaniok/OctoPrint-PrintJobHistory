@@ -21,13 +21,13 @@ class PrintJobService(object):
 
 
 	def savePrintJob(self, printJobModel):
-		if (printJobModel.databaseId == None):
+		if (printJobModel.databaseId is None):
 			return self.databaseManager.insertPrintJob(printJobModel)
 		else:
 			return self.databaseManager.updatePrintJob(printJobModel)
 
 	def loadPrintJob(self, databaseId):
-		if (databaseId == None):
+		if (databaseId is None):
 			return None
 		printJobModel = self.databaseManager.loadPrintJob(databaseId)
 		return printJobModel

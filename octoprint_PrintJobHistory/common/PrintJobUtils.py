@@ -10,7 +10,7 @@ def isPrintJobReprintable(fileManager, fileOrigin, filePathName, fileName):
 	fullFileLocation = ""
 	filePath = filePathName if StringUtils.isNotEmpty(filePathName) else fileName
 
-	if (fileOrigin == None):
+	if (fileOrigin is None):
 		# could be during csv import, assumption it is local
 		fileOrigin = FileDestinations.LOCAL
 
@@ -35,7 +35,7 @@ def isPrintJobReprintable(fileManager, fileOrigin, filePathName, fileName):
 def _isFileReadable(fullFileLocation):
 	result = False
 	try:
-		with open(fullFileLocation) as fp:
+		with open(fullFileLocation):
 			result = True
 	except IOError as err:
 		print ("Error reading the file {0}: {1}".format(fullFileLocation, err))
