@@ -1052,7 +1052,7 @@ $(function() {
         self.selectedDatabaseIdsAsCSV = "";
 
         self.deleteSelectedPrintJobs = function(){
-            if (self.selectedDatabaseIdsAsCSV.trim().length >1) {
+            if (self.printJobHistoryTableHelper.selectedTableItems().length > 0) {
                 var result = confirm("Do you really want to delete all selected(" + self.printJobHistoryTableHelper.selectedTableItems().length + ") printjobs?");
                 if (result == true) {
                     self.apiClient.callRemovePrintJob("0?databaseIds=" + self.selectedDatabaseIdsAsCSV, function (responseData) {
@@ -1078,6 +1078,7 @@ $(function() {
         self.printJobHistoryTableHelper.selectedTableItems.subscribe(function(newValue) {
 
             var newCSVUrl = self.apiClient.getExportUrl("CSV");
+            self.selectedDatabaseIdsAsCSV = "";
             if (newValue != null && newValue.length > 0){
                 var databaseIds = "";
                 for (var itemIndex = 0; itemIndex<newValue.length; itemIndex++){
