@@ -494,7 +494,6 @@ class PrintJobHistoryAPI(octoprint.plugin.BlueprintPlugin):
     def get_download_database(self):
         return send_file(self._databaseManager.getDatabaseFileLocation(),
                          mimetype='application/octet-stream',
-                         attachment_filename='printJobHistory.db',
                          as_attachment=True)
 
 
